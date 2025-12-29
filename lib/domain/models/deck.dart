@@ -1,21 +1,31 @@
-import 'card.dart';
-class Deck {
-  const Deck ({
-    required this.id,
-    required this.title, 
-    required this.totalPoint, 
-    required this.highscore, 
-    required this.cards, 
-  
-  });
-  final String id;
-  final String title;
-  final int totalPoint;
-  final int highscore;
-  final List<Card> cards;
+import 'package:flutterapp/domain/models/flashcard.dart';
+import 'package:uuid/uuid.dart';
 
-  void saveDeck(){}
-  void deleteDeck(){}
-  void getAllDecks(){}
-  void importFromCSV(file){}
+const uuid = Uuid(); 
+
+class Deck {
+  final String id;
+  String title;
+  int totalPoint;
+  int highscore;
+  List<Flashcard> flashcards;
+
+  Deck({
+    String? id,
+    required this.title,
+    this.totalPoint = 0,
+    this.highscore =0,
+    required this.flashcards
+  }) : id = id ?? uuid.v4();
+
+  @override
+  String toString() {
+    return """"
+Id: $id,
+Title: $title,
+Total Point: $totalPoint,
+Highscore: $highscore,
+Card: ${flashcards.length} total
+""";
+  }
 }
