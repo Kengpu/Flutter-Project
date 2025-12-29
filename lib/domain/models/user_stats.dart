@@ -1,5 +1,6 @@
-class User_state {
-  const User_state({
+
+class UserStats {
+  const UserStats({
     required this.totalEXP,
     required this.level,
     required this.dailyStreak,
@@ -9,14 +10,9 @@ class User_state {
   final int totalEXP;
   final int level;
   final int dailyStreak;
-  final Datetime lastStudyDate;
+  final DateTime lastStudyDate;
 
   void updateEXP(int amount){}
   void getStatus(){}
   void syncStreak(){}
-}
-
-
-class Datetime {
-
 }
