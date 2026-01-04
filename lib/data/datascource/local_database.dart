@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart'; // For kIsWeb
+import 'package:flutter/foundation.dart'; 
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/deck_model.dart';
 import '../models/user_stats_model.dart';
@@ -31,14 +31,12 @@ class LocalDataSource {
     }
   }
 
-  // --- SAVE STATS ---
   Future<void> saveUserStats(UserStatsModel stats) async {
     final prefs = await SharedPreferences.getInstance();
     final String encodedData = jsonEncode(stats.toJson());
     await prefs.setString(_statsKey, encodedData);
   }
 
-  // --- LOAD STATS ---
   Future<UserStatsModel?> loadUserStats() async {
     try {
       final prefs = await SharedPreferences.getInstance();

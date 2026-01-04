@@ -9,17 +9,24 @@ class DeckProvider extends ChangeNotifier {
   List<Deck> _decks = [];
   bool _isLoading = false;
 
-  DeckProvider({required this.deckRepository}) {loadDeck();}
+  DeckProvider({required this.deckRepository}) ;
 
   List<Deck> get decks => _decks;
   bool get isLoading => _isLoading;
 
   Future<void> loadDeck() async {
+    if (_isLoading) return;
     _isLoading = true;
     notifyListeners();
-    _decks = await deckRepository.getAllDecks();
-    _isLoading = false;
-    notifyListeners();
+    
+    try {
+      _decks = await deckRepository.getAllDecks();
+    } catch (e) {
+      debugPrint("Error loading decks: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> importFromCSV(String CSVContent, String deckTitle) async {
@@ -59,8 +66,8 @@ class DeckProvider extends ChangeNotifier {
 
     
     _decks.add(newDeck);
-    await deckRepository.addDeck(newDeck);
     notifyListeners();
+    await deckRepository.addDeck(newDeck);
   }
 
   Deck getDeckById(String id) {
