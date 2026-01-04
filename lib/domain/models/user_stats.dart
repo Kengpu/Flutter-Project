@@ -1,5 +1,3 @@
-
-
 class UserStats {
   int totalEXP;
   int level;
@@ -13,16 +11,15 @@ class UserStats {
     required this.lastStudyDate,
   });
 
-  bool addEXP (int amount){
-    totalEXP += amount;
-    int newLevel = (totalEXP / 100).toInt() + 1;
+  int get nextLevel => level * 100;
+  double get progress => totalEXP / nextLevel;
 
-    if (newLevel > level)
-    {
-      level = newLevel;
-      return true;
+  void addEXP (int amount){
+    totalEXP += amount;
+    while (totalEXP >= nextLevel) {
+      totalEXP -= nextLevel;
+      level++;
     }
-    return false;
   }
 
   void updateStreak(){

@@ -13,6 +13,7 @@ class Flashcard {
   final String id;
   String frontText;
   String backText;
+  String? image;
   CardStatus status;
   List<String>? distractors;
 
@@ -20,6 +21,7 @@ class Flashcard {
     String? id,
     required this.frontText,
     required this.backText,
+    this.image,
     this.status = CardStatus.isNew,
     this.distractors,
   }): id = id ?? uuid.v4();
@@ -32,6 +34,7 @@ class Flashcard {
 Id: $id,
 Front Text: $frontText,
 Back Text: $backText,
+Image: $image,
 Status: $status,
 Distrators: $distractors,
 Quizable: $quizable
