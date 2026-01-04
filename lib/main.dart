@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutterapp/UI/providers/deck_provider.dart';
 import 'package:flutterapp/UI/providers/study_provider.dart';
 import 'package:flutterapp/UI/providers/user_provider.dart';
+import 'package:flutterapp/UI/screens/home/home_screen.dart';
 import 'package:flutterapp/data/datascource/local_database.dart';
 import 'package:flutterapp/data/repositories/deck_repository_impl.dart';
 import 'package:flutterapp/data/repositories/user_repository_impl.dart';
@@ -19,7 +20,7 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => DeckProvider(deckRepository: deckRepo)..init(),
+          create: (_) => DeckProvider(deckRepository: deckRepo)..loadDeck(),
         ),
         ChangeNotifierProvider(
           create: (_) => UserProvider(userRepository: userRepo)..init(),
@@ -45,7 +46,7 @@ class StudyFlowApp extends StatelessWidget {
         scaffoldBackgroundColor: AppColors.background,
         primaryColor: AppColors.primaryOrange,
       ),
-      // home: const HomeScreen(),
+      home: const HomeScreen(),
     );
   }
 }

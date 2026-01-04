@@ -9,12 +9,12 @@ class DeckProvider extends ChangeNotifier {
   List<Deck> _decks = [];
   bool _isLoading = false;
 
-  DeckProvider({required this.deckRepository});
+  DeckProvider({required this.deckRepository}) {loadDeck();}
 
   List<Deck> get decks => _decks;
   bool get isLoading => _isLoading;
 
-  Future<void> init() async {
+  Future<void> loadDeck() async {
     _isLoading = true;
     notifyListeners();
     _decks = await deckRepository.getAllDecks();
@@ -45,11 +45,21 @@ class DeckProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> createDeck(String title) async {
-    final newDeck = Deck(title: title.trim(), flashcards: []);
+  Future<void> createDeck({
+    required String title,
+    String description = "",
+    String? coverImage,
+    required List<Flashcard> cards,
+    }) async {
+    final newDeck = Deck(
+      title: title.trim(),
+      description: description,
+      coverImage: coverImage, 
+      flashcards: cards);
 
-    await deckRepository.addDeck(newDeck);
+    
     _decks.add(newDeck);
+    await deckRepository.addDeck(newDeck);
     notifyListeners();
   }
 
@@ -57,13 +67,13 @@ class DeckProvider extends ChangeNotifier {
     return _decks.firstWhere((d) => d.id == id);
   }
 
-  Future<void> updateDeck(
-    String id,
+  Future<void> updateDeck({
+    required String id,
     String? newTitle,
     String? newDescription,
     String? newCoverImage,
     List<Flashcard>? updateCards,
-  ) async {
+  }) async {
     final index = _decks.indexWhere((d) => d.id == id);
     if (index == -1) return;
     Deck existingDeck = _decks[index];
@@ -71,8 +81,8 @@ class DeckProvider extends ChangeNotifier {
     final updatedDeck = Deck(
       id: existingDeck.id,
       title: newTitle ?? existingDeck.title,
-      description: newDescription ?? _decks[index].description,
-      coverImage: newCoverImage ?? _decks[index].description,
+      description: newDescription ?? existingDeck.description,
+      coverImage: newCoverImage ?? existingDeck.coverImage,
       flashcards: updateCards ?? existingDeck.flashcards,
       deckStatus: existingDeck.deckStatus,
       highscore: existingDeck.highscore,

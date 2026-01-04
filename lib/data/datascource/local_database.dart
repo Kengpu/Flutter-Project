@@ -1,61 +1,50 @@
 import 'dart:convert';
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter/foundation.dart'; // For kIsWeb
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/deck_model.dart';
 import '../models/user_stats_model.dart';
 
 class LocalDataSource {
-  static const String _decksFileName = 'decks.json';
-  static const String _statsFileName = 'user_stats.json';
-
-  Future<String> _getDirPath() async {
-    final directory = await getApplicationDocumentsDirectory();
-    return directory.path;
-  }
+  static const String _decksKey = 'decks_data';
+  static const String _statsKey = 'user_stats_data';
 
   Future<void> saveDecks(List<DeckModel> decks) async {
-    final path = await _getDirPath();
-    final file = File('$path/$_decksFileName');
-    
+    final prefs = await SharedPreferences.getInstance();
     final String encodedData = jsonEncode(
       decks.map((deck) => deck.toJson()).toList(),
     );
-    
-    await file.writeAsString(encodedData);
+    await prefs.setString(_decksKey, encodedData);
   }
 
   Future<List<DeckModel>> loadDecks() async {
     try {
-      final path = await _getDirPath();
-      final file = File('$path/$_decksFileName');
+      final prefs = await SharedPreferences.getInstance();
+      final String? content = prefs.getString(_decksKey);
 
-      if (!await file.exists()) return [];
+      if (content == null || content.isEmpty) return [];
 
-      final String content = await file.readAsString();
       final List<dynamic> decodedData = jsonDecode(content);
-
       return decodedData.map((item) => DeckModel.fromJson(item)).toList();
     } catch (e) {
+      debugPrint("Error loading decks: $e");
       return []; 
     }
   }
 
+  // --- SAVE STATS ---
   Future<void> saveUserStats(UserStatsModel stats) async {
-    final path = await _getDirPath();
-    final file = File('$path/$_statsFileName');
-    
+    final prefs = await SharedPreferences.getInstance();
     final String encodedData = jsonEncode(stats.toJson());
-    await file.writeAsString(encodedData);
+    await prefs.setString(_statsKey, encodedData);
   }
 
+  // --- LOAD STATS ---
   Future<UserStatsModel?> loadUserStats() async {
     try {
-      final path = await _getDirPath();
-      final file = File('$path/$_statsFileName');
+      final prefs = await SharedPreferences.getInstance();
+      final String? content = prefs.getString(_statsKey);
 
-      if (!await file.exists()) return null;
-
-      final String content = await file.readAsString();
+      if (content == null) return null;
       return UserStatsModel.fromJson(jsonDecode(content));
     } catch (e) {
       return null;
