@@ -8,6 +8,8 @@ import 'package:flutterapp/data/repositories/deck_repository_impl.dart';
 import 'package:flutterapp/data/repositories/user_repository_impl.dart';
 import 'package:provider/provider.dart';
 import 'core/constants/app_colors.dart';
+import 'package:flutterapp/UI/screens/home/welcome_screen.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,7 +48,7 @@ class StudyFlowApp extends StatelessWidget {
         scaffoldBackgroundColor: AppColors.background,
         primaryColor: AppColors.primaryOrange,
       ),
-      home: const HomeScreen(),
+      home: const Welcomescreen(),
     );
   }
 }

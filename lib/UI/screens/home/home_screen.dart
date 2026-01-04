@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutterapp/UI/screens/editor/deck_form_screen.dart';
+import 'package:flutterapp/UI/screens/study/flashcard_screen.dart';
 import 'package:flutterapp/domain/models/deck.dart';
 import 'package:provider/provider.dart';
 import 'package:flutterapp/UI/providers/deck_provider.dart';
@@ -121,7 +122,7 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 20),
           _buildModeButton(context, "Flashcard", Icons.style, () {
             Navigator.pop(context);
-            _navigateToStudy(context, deck); 
+            _navigateToFlashcard(context, deck); 
           }),
         ],
       ),
@@ -166,7 +167,10 @@ Widget _buildModeButton(BuildContext context, String label, IconData icon, VoidC
       );
   }
 
-  void _navigateToStudy(BuildContext context, deck) {
-    // Navigator.push logic to your Study/Game Screen
+  void _navigateToFlashcard(BuildContext context, deck) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => FlashcardScreen()),
+      );
   }
 }
