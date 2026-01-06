@@ -23,7 +23,7 @@ class ImageView extends StatelessWidget {
       return Icon(Icons.image, color: AppColors.surfaceLight, size: width ?? 24);
     }
 
-    if (!imageSource!.contains('/') && !imageSource!.contains('\\') && !imageSource!.startsWith('http')) {
+    if (!imageSource!.startsWith('http')) {
       try {
         return Image.memory(
           base64Decode(imageSource!),
@@ -37,7 +37,6 @@ class ImageView extends StatelessWidget {
       }
     }
 
-    if (kIsWeb) {
       return Image.network(
         imageSource!,
         width: width,
@@ -45,8 +44,6 @@ class ImageView extends StatelessWidget {
         fit: fit,
         errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
       );
-    }
 
-    return const Icon(Icons.broken_image, color: AppColors.error);
   }
 }

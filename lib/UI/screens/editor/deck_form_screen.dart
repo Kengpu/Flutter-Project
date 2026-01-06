@@ -1,196 +1,223 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutterapp/UI/screens/editor/card_editor_item.dart';
-import 'package:flutterapp/UI/widgets/image_picker_widget.dart';
-import 'package:provider/provider.dart';
-import 'package:flutterapp/UI/providers/deck_provider.dart';
-import 'package:flutterapp/core/constants/app_colors.dart';
 import 'package:flutterapp/domain/models/deck.dart';
 import 'package:flutterapp/domain/models/flashcard.dart';
+import 'package:flutterapp/data/repositories/deck_repository_impl.dart';
+import 'package:flutterapp/data/datascource/local_database.dart';
+import 'package:flutterapp/UI/widgets/image_picker_widget.dart';
 
-class DeckFormScreen extends StatefulWidget {
-  final Deck? existingDeck;
+class CardControllers {
+  final TextEditingController termController;
+  final TextEditingController definitionController;
+  List<TextEditingController> distractorControllers;
+  String? imageBase64;
 
-  const DeckFormScreen({super.key, this.existingDeck});
+  CardControllers({String term = "", String definition = "", List<String>? distractors, this.imageBase64})
+      : termController = TextEditingController(text: term),
+        definitionController = TextEditingController(text: definition),
+        distractorControllers = (distractors ?? []).map((d) => TextEditingController(text: d)).toList();
 
-  @override
-  State<DeckFormScreen> createState() => _DeckFormScreenState();
+  void addDistractor(){
+    distractorControllers.add(TextEditingController());
+  }
+
+  void dispose() {
+    termController.dispose();
+    definitionController.dispose();
+    for (var c in distractorControllers) {c.dispose();}
+  }
 }
 
-class _DeckFormScreenState extends State<DeckFormScreen> {
-  late TextEditingController _titleController;
-  late TextEditingController _descController;
-  String? _coverImage;
+class EditDeckScreen extends StatefulWidget {
+  final Deck? deckToEdit;
 
-  List<Flashcard> _cardsBuffer = [];
+  const EditDeckScreen({super.key, this.deckToEdit});
+
+  @override
+  State<EditDeckScreen> createState() => _EditDeckScreenState();
+}
+
+class _EditDeckScreenState extends State<EditDeckScreen> {
+  final DeckRepositoryImpl _deckRepo = DeckRepositoryImpl(LocalDataSource());
+  
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descController = TextEditingController();
+  String? _deckImageBase64;
+
+  List<CardControllers> _cardControllers = [];
 
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: widget.existingDeck?.title ?? "");
-    _descController = TextEditingController(text: widget.existingDeck?.description ?? "");
-    _coverImage = widget.existingDeck?.coverImage;
-    
-    _cardsBuffer = widget.existingDeck != null 
-        ? List.from(widget.existingDeck!.flashcards) 
-        : [Flashcard(frontText: "", backText: "")];
+    if (widget.deckToEdit != null) {
+      _titleController.text = widget.deckToEdit!.title;
+      _descController.text = widget.deckToEdit!.description;
+      _deckImageBase64 = widget.deckToEdit!.coverImage;
+      
+      _cardControllers = widget.deckToEdit!.flashcards.map((card) => 
+        CardControllers(
+          term: card.frontText, 
+          definition: card.backText, 
+          imageBase64: card.image,
+          distractors: card.distractors,
+        )
+      ).toList();
+    } else {
+      _cardControllers.add(CardControllers());
+    }
   }
 
-  void _addNewCard() {
-    setState(() {
-      _cardsBuffer.add(Flashcard(frontText: "", backText: ""));
-    });
+  void _addCard() {
+    setState(() => _cardControllers.add(CardControllers()));
   }
 
-void _onSave() async {
-  final provider = context.read<DeckProvider>();
-  
-  // Validation: Ensure title is not empty
-  if (_titleController.text.trim().isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Please enter a title")),
-    );
-    return;
-  }
+  void _saveDeck() async {
+    List<Flashcard> finalCards = _cardControllers.map((c) => Flashcard(
+      frontText: c.termController.text,
+      backText: c.definitionController.text,
+      image: c.imageBase64,
+      distractors: c.distractorControllers
+      .map((dc) => dc.text)
+      .where((text) => text.isNotEmpty).toList(),
+    )).toList();
 
-  if (widget.existingDeck == null) {
-    await provider.createDeck(
+    final updatedDeck = Deck(
+      id: widget.deckToEdit?.id, 
       title: _titleController.text,
       description: _descController.text,
-      coverImage: _coverImage,
-      cards: _cardsBuffer,
+      coverImage: _deckImageBase64,
+      flashcards: finalCards,
     );
-  } else {
-    await provider.updateDeck(
-      id: widget.existingDeck!.id,
-      newTitle: _titleController.text,
-      newDescription: _descController.text,
-      newCoverImage: _coverImage,
-      updateCards: _cardsBuffer,
-    );
-  }
 
-  Navigator.pop(context);
-}
+    if (widget.deckToEdit == null) {
+      await _deckRepo.addDeck(updatedDeck);
+    } else {
+      await _deckRepo.updateDeck(updatedDeck);
+    }
+
+    if (mounted) Navigator.pop(context, true);
+  }
 
   @override
   Widget build(BuildContext context) {
-    bool isEditing = widget.existingDeck != null;
-
     return Scaffold(
-      backgroundColor: AppColors.primaryCyan,
+      backgroundColor: const Color(0xFF00E5FF),
       appBar: AppBar(
-        title: Text(isEditing ? "Edit Deck" : "Create Deck"),
+        title: Text(widget.deckToEdit == null ? "Create Deck" : "Edit Deck"),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-          onPressed: () => Navigator.pop(context), 
-        ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            _buildDeckHeader(),
+            const SizedBox(height: 20),
+            
+            ..._cardControllers.asMap().entries.map((entry) => 
+              _buildCardEditor(entry.value, entry.key)
+            ),
+            
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: _addCard,
+              child: const Text("Add Card"),
+            ),
+            const SizedBox(height: 40),
+            
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildDeckField("Deck Title", _titleController),
-                const SizedBox(height: 12),
-                _buildDeckField("Description", _descController),                
-                const SizedBox(height: 20),
-                Center(
-                  child: ImagePickerWidget(
-                    imagePath: _coverImage,
-                    size: 100,
-                    onImageSelected: (path) => setState(() => _coverImage = path,),
-                  ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  child: const Text("Discard"),
                 ),
-                const SizedBox(height: 30),
-                
-                  ..._cardsBuffer.asMap().entries.map((entry) {
-                    int index = entry.key;
-                    Flashcard card = entry.value;
-                    return CardEditorItem(
-                      key: ValueKey(card.id),
-                      index: index,
-                      card: card,
-                      onFrontChanged: (val) => entry.value.frontText = val,
-                      onBackChanged: (val) => entry.value.backText = val,
-                      onImageChanged: (path) => setState(() => card.image = path),
-                      onDistractorChanged: (dIndex, val) => card.distractors![dIndex] =val,
-                      onDelete: () => setState(() => _cardsBuffer.removeAt(entry.key)),
-                      onAddMultipleChoice: () {
-                        setState(() {
-                          entry.value.distractors = entry.value.distractors ?? [];
-                          entry.value.distractors!.add("");
-                        });
-                      },
-                    );
-                  }).toList(),
-                const SizedBox(height: 10,),
-                Center(
-                  child: ElevatedButton.icon(
-                    onPressed: _addNewCard,
-                    icon: const Icon(Icons.add, color: Colors.white,),
-                    label: const Text("Add Card", style: TextStyle(color: AppColors.textPrimary)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryOrange,
-                      padding: const EdgeInsets.symmetric(horizontal: 31, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    ),
-                  )
+                ElevatedButton(
+                  onPressed: _saveDeck,
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                  child: const Text("Save"),
                 ),
-                const SizedBox(height: 40,),
               ],
-            ),
-          ),
-          
-          _buildFooter(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDeckField(String hint, TextEditingController controller) {
-  return TextField(
-    controller: controller,
-    decoration: InputDecoration(
-      hintText: hint,
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(15),
-        borderSide: BorderSide.none,
+            )
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildFooter() {
+  Widget _buildDeckHeader() {
     return Container(
-      padding: const EdgeInsets.all(20),
-      color: Colors.white.withOpacity(0.2),
-      child: Row(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+      child: Column(
         children: [
-          Expanded(
-            child: ElevatedButton(
-              onPressed: () => Navigator.pop(context), 
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text("Discard"),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: ElevatedButton(
-              onPressed: _onSave, 
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.greenAccent),
-              child: const Text("Save"),
-            ),
+          TextField(controller: _titleController, decoration: const InputDecoration(labelText: "Deck Title")),
+          TextField(controller: _descController, decoration: const InputDecoration(labelText: "Description")),
+          const SizedBox(height: 10),
+          ImagePickerWidget(
+            imagePath: _deckImageBase64,
+            onImageSelected: (base64) => setState(() => _deckImageBase64 = base64),
           ),
         ],
       ),
     );
+  }
+
+Widget _buildCardEditor(CardControllers controllers, int index) {
+  return Container(
+    margin: const EdgeInsets.only(top: 15),
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(color: Colors.deepPurple, borderRadius: BorderRadius.circular(12)),
+    child: Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                children: [
+                  TextField(controller: controllers.termController, decoration: const InputDecoration(labelText: "Term")),
+                  TextField(controller: controllers.definitionController, decoration: const InputDecoration(labelText: "Definition")),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            ImagePickerWidget(
+              imagePath: controllers.imageBase64,
+              onImageSelected: (base) => setState(() => controllers.imageBase64 = base),
+            ),
+          ],
+        ),
+        
+        const SizedBox(height: 8),
+        ...controllers.distractorControllers.asMap().entries.map((entry) {
+          return Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: TextField(
+              controller: entry.value,
+              style: const TextStyle(color: Colors.white, fontSize: 13),
+              decoration: InputDecoration(
+                hintText: "Distractor ${entry.key + 1}",
+                hintStyle: const TextStyle(color: Colors.white54),
+                filled: true,
+                fillColor: Colors.white10,
+              ),
+            ),
+          );
+        }),
+        TextButton.icon(
+          onPressed: () => setState(() => controllers.addDistractor()),
+          icon: const Icon(Icons.add, color: Colors.yellow, size: 18),
+          label: const Text("Add multiple choice", style: TextStyle(color: Colors.yellow)),
+        ),
+      ],
+    ),
+  );
+}
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descController.dispose();
+    for (var c in _cardControllers) { c.dispose(); }
+    super.dispose();
   }
 }

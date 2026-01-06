@@ -1,0 +1,22 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "StudyFlow (Persistent Debug)",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "--web-port=8080",
+                "--web-browser-flag=--user-data-dir=${userHome}/.flutter_chrome_debug"
+            ]
+        },
+        {
+            "name": "Flutter-Project",
+            "request": "launch",
+            "type": "dart"
+        }
+    ]
+}
