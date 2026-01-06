@@ -1,73 +1,107 @@
 import 'package:flutter/material.dart';
+import 'package:flutterapp/core/constants/app_colors.dart'; // Import your colors
 import 'package:flutterapp/UI/screens/home/home_screen.dart';
-import 'package:flutterapp/UI/screens/home/welcome_screen.dart';
 
-void main() {
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: Welcomescreen(),
-  ));
-}
-
-// --- 1. The Start Screen (from previous steps) ---
 class Welcomescreen extends StatelessWidget {
   const Welcomescreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF00FFFF),
-      body: SafeArea(
-        child: SizedBox(
-          width: double.infinity,
-          child: Column(
-            children: [
-              const Spacer(flex: 3),
-              const Text(
-                "Study\nFlow",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 45,
-                  color: Colors.black,
-                  fontWeight: FontWeight.w400,
-                  height: 1.1,
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppColors.primaryNavy, // Deep Royal Blue from constants
+              AppColors.navydark,   // Dark Navy from constants
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: Column(
+              children: [
+                const Spacer(flex: 3),
+                
+                // Icon/Logo Section
+                const Icon(
+                  Icons.auto_awesome_motion_rounded,
+                  color: AppColors.textPrimary, // White
+                  size: 70,
                 ),
-              ),
-              const Spacer(flex: 4),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 70, vertical: 18),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF0F480),
-                    borderRadius: BorderRadius.circular(25),
-                    boxShadow: [
-                      BoxShadow(
-                        // ignore: deprecated_member_use
-                        color: Colors.black.withOpacity(0.15),
-                        spreadRadius: 1,
-                        blurRadius: 15,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
+                
+                const SizedBox(height: 20),
+                
+                // Title
+                const Text(
+                  "Study Flow",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 48,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary, // White
+                    letterSpacing: -1,
                   ),
-                  child: const Text(
-                    "Start",
-                    style: TextStyle(
-                      fontSize: 22,
-                      color: Colors.black,
-                      fontWeight: FontWeight.w500,
+                ),
+                
+                const SizedBox(height: 10),
+                
+                // Tagline
+                const Text(
+                  "Level Up Your Learning\nThrough Play",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: AppColors.textSecondary, // Light grey/white70
+                    fontWeight: FontWeight.w300,
+                    height: 1.4,
+                  ),
+                ),
+                
+                const Spacer(flex: 5),
+                
+                // Get Started Button
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const HomeScreen()),
+                    );
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    decoration: BoxDecoration(
+                      color: AppColors.textPrimary, // White button
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: const Text(
+                      "Get Started",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 18,
+                        color:AppColors.navydark, // Dark Navy text
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const Spacer(flex: 5),
-            ],
+                
+                const SizedBox(height: 40),
+              ],
+            ),
           ),
         ),
       ),

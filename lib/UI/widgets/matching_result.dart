@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutterapp/core/constants/app_colors.dart'; // Import your colors
 
 class ResultWidget extends StatelessWidget {
   final int score;
@@ -14,78 +15,113 @@ class ResultWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Dynamic message based on performance
+    // Performance logic
     String rank;
     IconData icon;
-    Color iconColor;
+    Color accentColor;
 
     if (score >= 50) {
       rank = "Speed Demon!";
-      icon = Icons.bolt;
-      iconColor = Colors.amber;
+      icon = Icons.bolt_rounded;
+      accentColor = Colors.amber[700]!; // Keeping amber for the "Gold" achievement feel
     } else if (score >= 25) {
       rank = "Great Job!";
-      icon = Icons.star;
-      iconColor = Colors.orange;
+      icon = Icons.stars_rounded;
+      accentColor = Colors.orange;
     } else {
-      rank = "Finish!";
-      icon = Icons.emoji_events;
-      iconColor = Colors.blueGrey;
+      rank = "Session Finished";
+      icon = Icons.timer_outlined;
+      accentColor = AppColors.primaryNavy;
     }
 
-    return Container(
-      color: Colors.black54, // Dim background
-      width: double.infinity,
-      height: double.infinity,
-      child: Center(
+    return Scaffold(
+      backgroundColor: Colors.black.withOpacity(0.6), // Dim background overlay
+      body: Center(
         child: Container(
           width: MediaQuery.of(context).size.width * 0.85,
-          padding: const EdgeInsets.all(25),
+          padding: const EdgeInsets.all(30),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.scaffoldBg, // Consistent light background
             borderRadius: BorderRadius.circular(30),
-            boxShadow: const [
-              BoxShadow(color: Colors.black45, blurRadius: 20, spreadRadius: 2)
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 30,
+                offset: const Offset(0, 10),
+              )
             ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: iconColor, size: 80),
-              const SizedBox(height: 10),
+              // --- ICON & RANK ---
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: accentColor.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: accentColor, size: 70),
+              ),
+              const SizedBox(height: 20),
               Text(
                 rank,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 28, 
-                  fontWeight: FontWeight.bold, 
-                  color: Colors.black87
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textDark,
                 ),
               ),
+              const SizedBox(height: 10),
+              const Text(
+                "Performance Summary",
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+              ),
+              
               const Padding(
-                padding: EdgeInsets.symmetric(vertical: 15),
-                child: Divider(),
+                padding: EdgeInsets.symmetric(vertical: 25),
+                child: Divider(height: 1),
               ),
-              _buildStatRow("Time Taken", time),
-              _buildStatRow("Points Earned", "+$score"),
-              const SizedBox(height: 30),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: onRestart,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF00C9FF),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15)
+
+              // --- STATS AREA ---
+              _buildStatRow("Time Taken", time, Icons.access_time_rounded),
+              const SizedBox(height: 15),
+              _buildStatRow("Points Earned", "+$score", Icons.emoji_events_outlined),
+
+              const SizedBox(height: 35),
+
+              // --- BUTTONS ---
+              Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: onRestart,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryNavy,
+                        foregroundColor: AppColors.textPrimary,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        "PLAY AGAIN",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                      ),
                     ),
-                    elevation: 5,
                   ),
-                  child: const Text(
-                    "PLAY AGAIN",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  const SizedBox(height: 10),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      "Exit to Menu",
+                      style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                    ),
                   ),
-                ),
+                ],
               ),
             ],
           ),
@@ -94,16 +130,32 @@ class ResultWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildStatRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(fontSize: 16, color: Colors.black54)),
-          Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black)),
-        ],
-      ),
+  Widget _buildStatRow(String label, String value, IconData icon) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppColors.textPrimary, // White box for the icon
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child:Icon(icon, size: 20, color: AppColors.primaryNavy),
+        ),
+        const SizedBox(width: 15),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 16, color: AppColors.textSecondary),
+        ),
+        const Spacer(),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: AppColors.primaryNavy,
+          ),
+        ),
+      ],
     );
   }
-} 
+}

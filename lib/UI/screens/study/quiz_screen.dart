@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:flutterapp/core/constants/app_colors.dart'; // Import your colors
 import 'package:flutterapp/UI/widgets/quiz_result.dart';
 import 'package:flutterapp/domain/models/deck.dart';
 import 'package:flutterapp/domain/models/flashcard.dart';
@@ -16,162 +18,222 @@ class _QuizScreenState extends State<QuizScreen> {
   int _currentIndex = 0;
   int _score = 0;
   bool _gameFinished = false;
-  final Map<int, int> _userAnswers = {}; // selected option index
+  
+  int? _selectedOptionIndex;
+  bool _showFeedback = false;
 
-  List<Flashcard> get _quizCards =>
-      widget.deck.flashcards.where((f) => true).toList();
+  late List<Map<String, dynamic>> _quizData;
 
-  // Build quiz data for QuizResultWidget
-  List<Map<String, dynamic>> get _quizCardsData {
-    return _quizCards.map((card) {
-      List<String> options;
-      if (card.quizable) {
-        options = [card.backText, ...card.distractors!];
-      } else {
-        options = ["Correct", "Incorrect"];
-      }
+  @override
+  void initState() {
+    super.initState();
+    _generateQuizData();
+  }
+
+  void _generateQuizData() {
+    _quizData = widget.deck.flashcards.map((card) {
+      List<String> options = [card.backText, ...(card.distractors ?? [])];
       options.shuffle(Random());
       return {
         'frontText': card.frontText,
         'backText': card.backText,
-        'distractors': card.distractors ?? [],
+        'image': card.image,
         'correctAnswer': card.backText,
         'shuffledOptions': options,
       };
     }).toList();
   }
 
-  void _selectOption(int optionIndex) {
-    final cardData = _quizCardsData[_currentIndex];
-    final selectedOption = cardData['shuffledOptions'][optionIndex];
-    final correctAnswer = cardData['correctAnswer'];
+  void _selectOption(int optionIndex) async {
+    if (_showFeedback) return; 
 
-    if (selectedOption == correctAnswer) _score++;
+    final currentCard = _quizData[_currentIndex];
+    final selectedOption = currentCard['shuffledOptions'][optionIndex];
+    final correctAnswer = currentCard['correctAnswer'];
+    bool isCorrect = selectedOption == correctAnswer;
 
-    _userAnswers[_currentIndex] = optionIndex;
+    setState(() {
+      _selectedOptionIndex = optionIndex;
+      _showFeedback = true;
+    });
 
-    if (_currentIndex + 1 < _quizCards.length) {
-      setState(() => _currentIndex++);
+    if (isCorrect) _score++;
+
+    await Future.delayed(Duration(milliseconds: isCorrect ? 600 : 1200));
+
+    if (!mounted) return;
+
+    if (_currentIndex + 1 < _quizData.length) {
+      setState(() {
+        _currentIndex++;
+        _showFeedback = false;
+        _selectedOptionIndex = null;
+      });
     } else {
       setState(() => _gameFinished = true);
     }
   }
 
-  // Restart quiz
   void _restartQuiz() {
     setState(() {
       _currentIndex = 0;
       _score = 0;
       _gameFinished = false;
-      _userAnswers.clear();
+      _showFeedback = false;
+      _selectedOptionIndex = null;
+      _generateQuizData();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_quizCards.isEmpty) {
-      return Scaffold(
-        backgroundColor: const Color(0xFF00FFFF),
-        body: const Center(
-          child: Text(
-            "No quiz available for this deck",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-        ),
+    if (_quizData.isEmpty) {
+      return const Scaffold(
+        backgroundColor: AppColors.scaffoldBg,
+        body: Center(child: Text("No questions.", style: TextStyle(color: AppColors.textSecondary))),
       );
     }
 
-    // Show result screen if quiz finished
     if (_gameFinished) {
       return QuizResultWidget(
         score: _score,
-        totalQuestions: _quizCards.length,
-        quizCards: _quizCardsData,
-        userAnswers: _userAnswers,
-        onRestart: _restartQuiz, // restart works now
+        totalQuestions: _quizData.length,
+        quizCards: _quizData,
+        userAnswers: const {}, 
+        onRestart: _restartQuiz,
       );
     }
 
-    final cardData = _quizCardsData[_currentIndex];
-    final card = _quizCards[_currentIndex];
-    final options = cardData['shuffledOptions'];
+    final currentCard = _quizData[_currentIndex];
+    final options = currentCard['shuffledOptions'] as List<String>;
+    final progress = (_currentIndex + 1) / _quizData.length;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF00FFFF),
+      backgroundColor: AppColors.scaffoldBg,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF00FFFF),
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context); // go back to previous screen
-          },
-        ),
-        title: Text(
-          "Quiz: ${widget.deck.title}",
-          style: const TextStyle(
-              fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
-        ),
+        backgroundColor: Colors.transparent,
+        foregroundColor: AppColors.primaryNavy,
+        title: const Text("Quiz Mode", style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "Question ${_currentIndex + 1} of ${_quizCards.length}",
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 40),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF004D4D),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Center(
-                  child: Text(
-                    card.frontText,
-                    style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
-                    textAlign: TextAlign.center,
-                  ),
+              const SizedBox(height: 10),
+              TweenAnimationBuilder<double>(
+                duration: const Duration(milliseconds: 400),
+                tween: Tween<double>(begin: 0, end: progress),
+                builder: (context, value, _) => LinearProgressIndicator(
+                  value: value,
+                  backgroundColor: AppColors.textPrimary,
+                  color: AppColors.primaryNavy,
+                  minHeight: 8,
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              const SizedBox(height: 40),
-              Column(
-                children: List.generate(
-                  options.length,
-                  (i) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: InkWell(
-                      onTap: () => _selectOption(i),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        decoration: BoxDecoration(
-                          color: _userAnswers[_currentIndex] == i
-                              ? Colors.yellow
-                              : Colors.white,
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: Text(
-                          options[i],
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,
-                        ),
+              const SizedBox(height: 20),
+              
+              Expanded(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 400),
+                  transitionBuilder: (child, animation) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: SlideTransition(
+                        position: Tween<Offset>(begin: const Offset(0.1, 0), end: Offset.zero).animate(animation),
+                        child: child,
                       ),
-                    ),
+                    );
+                  },
+                  child: Column(
+                    key: ValueKey<int>(_currentIndex), 
+                    children: [
+                      _buildQuestionCard(currentCard),
+                      const SizedBox(height: 30),
+                      ...List.generate(options.length, (i) => _buildOptionTile(options[i], i, currentCard['correctAnswer'])),
+                    ],
                   ),
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuestionCard(Map<String, dynamic> card) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(25),
+      decoration: BoxDecoration(
+        color: AppColors.primaryNavy,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(color: AppColors.primaryNavy.withOpacity(0.2), blurRadius: 15, offset: const Offset(0, 8))
+        ],
+      ),
+      child: Column(
+        children: [
+          if (card['image'] != null && card['image'].isNotEmpty) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(15),
+              child: Image.memory(base64Decode(card['image']), height: 140, fit: BoxFit.cover),
+            ),
+            const SizedBox(height: 20),
+          ],
+          Text(
+            card['frontText'],
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOptionTile(String text, int index, String correctAnswer) {
+    Color cardColor = AppColors.textPrimary;
+    Color textColor = AppColors.textDark;
+    Color borderColor = AppColors.textDark.withOpacity(0.05);
+
+    if (_showFeedback) {
+      if (text == correctAnswer) {
+        // Highlighting correct answer in Green
+        cardColor = const Color(0xFFE8F5E9); 
+        textColor = const Color(0xFF2E7D32);
+        borderColor = Colors.green;
+      } else if (_selectedOptionIndex == index) {
+        // Highlighting wrong selection in Red
+        cardColor = const Color(0xFFFFEBEE); 
+        textColor = AppColors.error;
+        borderColor = AppColors.error;
+      }
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: GestureDetector(
+        onTap: () => _selectOption(index),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: borderColor, width: 2),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))
+            ],
+          ),
+          child: Text(
+            text,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
+            textAlign: TextAlign.center,
           ),
         ),
       ),

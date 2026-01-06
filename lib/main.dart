@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutterapp/UI/screens/home/home_screen.dart';
 import 'package:flutterapp/UI/screens/home/welcome_screen.dart';
 
 void main() async {

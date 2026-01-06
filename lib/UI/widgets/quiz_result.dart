@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutterapp/core/constants/app_colors.dart'; // Import your colors
 
 class QuizResultWidget extends StatelessWidget {
   final int score;
   final int totalQuestions;
   final List<Map<String, dynamic>> quizCards;
   final Map<int, int> userAnswers;
-  final VoidCallback onRestart; // renamed for clarity
+  final VoidCallback onRestart;
 
   const QuizResultWidget({
     super.key,
@@ -18,64 +19,135 @@ class QuizResultWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int percentage = ((score / totalQuestions) * 100).toInt();
+    int percentage = totalQuestions > 0 ? ((score / totalQuestions) * 100).toInt() : 0;
+    
+    // Performance logic
+    String rank;
+    IconData icon;
+    Color accentColor;
+
+    if (percentage >= 85) {
+      rank = "Quiz Master!";
+      icon = Icons.emoji_events_rounded;
+      accentColor = Colors.amber[700]!;
+    } else if (percentage >= 60) {
+      rank = "Great Effort!";
+      icon = Icons.stars_rounded;
+      accentColor = Colors.orange;
+    } else {
+      rank = "Keep Practicing!";
+      icon = Icons.menu_book_rounded;
+      accentColor = AppColors.primaryNavy;
+    }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF00FFFF),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+      backgroundColor: Colors.black54, 
+      body: Center(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.88,
+          height: MediaQuery.of(context).size.height * 0.82, 
+          padding: const EdgeInsets.all(25),
+          decoration: BoxDecoration(
+            color: AppColors.scaffoldBg,
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: const [
+              BoxShadow(color: Colors.black45, blurRadius: 20, spreadRadius: 2)
+            ],
+          ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min, 
             children: [
-              const SizedBox(height: 20),
-              const Center(
-                child: Text(
-                  "Result",
-                  style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+              // --- ICON & RANK ---
+              // Removed 'const' here because 'icon' and 'accentColor' are dynamic
+              Icon(icon, color: accentColor, size: 70),
+              const SizedBox(height: 10),
+              Text(
+                rank,
+                style: const TextStyle(
+                  fontSize: 26, 
+                  fontWeight: FontWeight.bold, 
+                  color: AppColors.textDark
                 ),
               ),
-              const SizedBox(height: 20),
-              Text(
-                "$percentage%",
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 15),
+                child: Divider(thickness: 1),
               ),
-              Text("Correct: $score", style: const TextStyle(fontSize: 22)),
-              Text("Incorrect: ${totalQuestions - score}", style: const TextStyle(fontSize: 22)),
+
+              // --- STATS ROW ---
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildStatItem("Accuracy", "$percentage%"),
+                  _buildStatItem("Score", "$score / $totalQuestions"),
+                ],
+              ),
+              
               const SizedBox(height: 20),
 
-              // Review of questions
-              ...List.generate(quizCards.length, (index) {
-                final card = quizCards[index];
-                final userAnswerIdx = userAnswers[index];
-                final options = [...card['shuffledOptions']];
-                return _buildReviewCard(
-                  card['frontText'],
-                  options,
-                  card['correctAnswer'],
-                  userAnswerIdx,
-                );
-              }),
-
-              Align(
-                alignment: Alignment.center,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: ElevatedButton(
-                    onPressed: onRestart, // calls the restart function from QuizScreen
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00FF88),
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                    child: const Text(
-                      "Restart Quiz",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
+              // --- SCROLLABLE REVIEW LIST ---
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Review Answers", 
+                  style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textSecondary, fontSize: 13)
+                ),
+              ),
+              const SizedBox(height: 10),
+              
+              Flexible(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.textPrimary.withOpacity(0.5), // White-ish overlay
+                    borderRadius: BorderRadius.circular(15),
                   ),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    padding: const EdgeInsets.all(8),
+                    itemCount: quizCards.length,
+                    itemBuilder: (context, index) {
+                      final card = quizCards[index];
+                      final userAnswerIdx = userAnswers[index];
+                      final options = card['shuffledOptions'];
+                      final String userText = userAnswerIdx != null ? options[userAnswerIdx] : "No Answer";
+                      
+                      return _buildCompactReviewRow(
+                        card['frontText'],
+                        card['correctAnswer'],
+                        userText,
+                      );
+                    },
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 25),
+
+              // --- BUTTONS ---
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: onRestart,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryNavy,
+                    foregroundColor: AppColors.textPrimary,
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    elevation: 5,
+                  ),
+                  child: const Text(
+                    "PLAY AGAIN",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 5),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  "Exit to Menu",
+                  style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -85,49 +157,57 @@ class QuizResultWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildReviewCard(
-      String question, List<dynamic> options, String correctText, int? userIdx) {
+  Widget _buildStatItem(String label, String value) {
+    return Column(
+      children: [
+        Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+        Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primaryNavy)),
+      ],
+    );
+  }
+
+  Widget _buildCompactReviewRow(String question, String correct, String user) {
+    bool isCorrect = correct == user;
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF004D4D),
-        borderRadius: BorderRadius.circular(20),
+        color: AppColors.textPrimary, // White
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.textSecondary.withOpacity(0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Question",
-              style: TextStyle(color: Colors.white, fontSize: 18)),
-          const SizedBox(height: 8),
-          Text(question,
-              style: const TextStyle(color: Colors.white, fontSize: 16)),
-          const SizedBox(height: 15),
-          ...List.generate(options.length, (i) {
-            String optionText = options[i];
-            bool isCorrect = optionText == correctText;
-            bool isUserChoice = (userIdx != null && options[userIdx] == optionText);
-
-            return Container(
-              margin: const EdgeInsets.symmetric(vertical: 5),
-              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
+          Text(
+            question, 
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textDark),
+            maxLines: 1, 
+            overflow: TextOverflow.ellipsis
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Icon(
+                isCorrect ? Icons.check_circle : Icons.cancel, 
+                color: isCorrect ? Colors.green : AppColors.error, 
+                size: 14
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(optionText,
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
-                  if (isCorrect)
-                    const Icon(Icons.check_circle, color: Colors.green)
-                  else if (isUserChoice && !isCorrect)
-                    const Icon(Icons.cancel, color: Colors.red),
-                ],
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  isCorrect ? "Correct!" : "Right: $correct",
+                  style: TextStyle(
+                    fontSize: 12, 
+                    fontWeight: FontWeight.w500,
+                    color: isCorrect ? Colors.green[700] : AppColors.error
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            );
-          }),
+            ],
+          ),
         ],
       ),
     );
