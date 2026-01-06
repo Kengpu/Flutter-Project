@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterapp/core/constants/app_colors.dart';
@@ -21,10 +20,10 @@ class ImageView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (imageSource == null || imageSource!.isEmpty) {
-      return const Icon(Icons.image, color:AppColors.surfaceLight);
+      return Icon(Icons.image, color: AppColors.surfaceLight, size: width ?? 24);
     }
 
-    if (kIsWeb || !imageSource!.contains('/')) {
+    if (!imageSource!.startsWith('http')) {
       try {
         return Image.memory(
           base64Decode(imageSource!),
@@ -34,15 +33,17 @@ class ImageView extends StatelessWidget {
           errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
         );
       } catch (e) {
-        return const Icon(Icons.broken_image, color: AppColors.error);
+        debugPrint("Base64 decode failed: $e");
       }
     }
 
-    return Image.file(
-      File(imageSource!),
-      width: width,
-      height: height,
-      fit: fit,
-    );
+      return Image.network(
+        imageSource!,
+        width: width,
+        height: height,
+        fit: fit,
+        errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
+      );
+
   }
 }

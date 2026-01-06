@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutterapp/core/constants/app_colors.dart';
+import 'package:flutterapp/domain/models/deck.dart';
+import 'package:flutterapp/domain/models/flashcard.dart';
 import 'dart:math';
 
-void main() => runApp(const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: FlashcardScreen(),
-    ));
-
 class FlashcardScreen extends StatefulWidget {
-  const FlashcardScreen({super.key});
+  final Deck deck;
+
+  const FlashcardScreen({
+    super.key,
+    required this.deck,
+  });
 
   @override
   State<FlashcardScreen> createState() => _FlashcardScreenState();
@@ -16,48 +18,25 @@ class FlashcardScreen extends StatefulWidget {
 
 class _FlashcardScreenState extends State<FlashcardScreen>
     with SingleTickerProviderStateMixin {
-  // 1. Data Source
-  final List<Map<String, String>> _cards = [
-    {"front": "Primary Language", "back": "Dart"},
-    {"front": "UI Building Block", "back": "Widget"},
-    {"front": "Static UI Widget", "back": "StatelessWidget"},
-    {"front": "Dynamic UI Widget", "back": "StatefulWidget"},
-    {"front": "Update State Method", "back": "setState()"},
-    {"front": "Config File", "back": "pubspec.yaml"},
-    {"front": "App Structure Widget", "back": "Scaffold"},
-    {"front": "Vertical Layout", "back": "Column"},
-    {"front": "Horizontal Layout", "back": "Row"},
-    {"front": "Widget Location Tree", "back": "BuildContext"},
-    {"front": "Padding & Margin Widget", "back": "Container"},
-    {"front": "Scrollable Linear List", "back": "ListView"},
-    {"front": "Fill Available Space", "back": "Expanded"},
-    {"front": "Hot Reload", "back": "Update code without losing state"},
-    {"front": "initState()", "back": "Called once when widget is created"},
-    {"front": "dispose()", "back": "Called when widget is destroyed"},
-    {"front": "Detect Taps", "back": "GestureDetector"},
-    {"front": "Top Widget Tree", "back": "MaterialApp"},
-    {"front": "Overlap Widgets", "back": "Stack"},
-    {"front": "Fetch Dependencies", "back": "flutter pub get"},
-    {"front": "State Management", "back": "Sharing data across the app"},
-    {"front": "Main Axis (Column)", "back": "Vertical Alignment"},
-    {"front": "Cross Axis (Column)", "back": "Horizontal Alignment"},
-    {"front": "Ripple Effect", "back": "InkWell"},
-    {"front": "App Entry Point", "back": "main()"},
-  ];
 
+  late List<Flashcard> _cards;
   int _currentIndex = 0;
+  bool _isFront = true;
+
   late AnimationController _controller;
   late Animation<double> _animation;
-  bool _isFront = true;
 
   @override
   void initState() {
     super.initState();
-    // 2. Setup Animation Controller
+
+    _cards = widget.deck.flashcards;
+
     _controller = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
+
     _animation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
@@ -79,7 +58,8 @@ class _FlashcardScreenState extends State<FlashcardScreen>
   }
 
   void _nextCard() {
-    _controller.reset(); // Reset animation for new card
+    if (_cards.isEmpty) return;
+    _controller.reset();
     setState(() {
       _isFront = true;
       _currentIndex = (_currentIndex + 1) % _cards.length;
@@ -87,29 +67,49 @@ class _FlashcardScreenState extends State<FlashcardScreen>
   }
 
   void _prevCard() {
+    if (_cards.isEmpty) return;
     _controller.reset();
     setState(() {
       _isFront = true;
-      _currentIndex = (_currentIndex - 1 + _cards.length) % _cards.length;
+      _currentIndex =
+          (_currentIndex - 1 + _cards.length) % _cards.length;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    double progress = (_currentIndex + 1) / _cards.length;
+    if (_cards.isEmpty) {
+      return Scaffold(
+        backgroundColor: AppColors.primaryCyan,
+        appBar: AppBar(
+          title: Text(widget.deck.title),
+          backgroundColor: AppColors.primaryCyan,
+          foregroundColor: Colors.black,
+        ),
+        body: const Center(
+          child: Text(
+            "No flashcards in this deck",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ),
+      );
+    }
+
+    final progress = (_currentIndex + 1) / _cards.length;
 
     return Scaffold(
       backgroundColor: AppColors.primaryCyan,
       appBar: AppBar(
+        title: Text(widget.deck.title),
         backgroundColor: AppColors.primaryCyan,
-        foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-
+        foregroundColor: Colors.black,
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           children: [
             const SizedBox(height: 30),
+
             // Progress Bar
             LinearProgressIndicator(
               value: progress,
@@ -118,11 +118,16 @@ class _FlashcardScreenState extends State<FlashcardScreen>
               minHeight: 8,
               borderRadius: BorderRadius.circular(10),
             ),
+
             const SizedBox(height: 10),
-            Text("${_currentIndex + 1} of ${_cards.length}",
-                style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              "${_currentIndex + 1} of ${_cards.length}",
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+
             const Spacer(),
-            // 3. Animated Flashcard
+
+            // Flashcard
             GestureDetector(
               onTap: _flipCard,
               child: AnimatedBuilder(
@@ -131,12 +136,12 @@ class _FlashcardScreenState extends State<FlashcardScreen>
                   final angle = _animation.value * pi;
                   return Transform(
                     transform: Matrix4.identity()
-                      ..setEntry(3, 2, 0.001) // Perspective
+                      ..setEntry(3, 2, 0.001)
                       ..rotateY(angle),
                     alignment: Alignment.center,
                     child: angle < pi / 2
                         ? _buildCardSide(
-                            _cards[_currentIndex]["front"]!,
+                            _cards[_currentIndex].frontText,
                             AppColors.starGold,
                             AppColors.textPrimary,
                           )
@@ -144,7 +149,7 @@ class _FlashcardScreenState extends State<FlashcardScreen>
                             alignment: Alignment.center,
                             transform: Matrix4.identity()..rotateY(pi),
                             child: _buildCardSide(
-                              _cards[_currentIndex]["back"]!,
+                              _cards[_currentIndex].backText,
                               AppColors.primaryOrange,
                               AppColors.textPrimary,
                             ),
@@ -153,8 +158,9 @@ class _FlashcardScreenState extends State<FlashcardScreen>
                 },
               ),
             ),
-            const SizedBox(height: 20),
+
             const Spacer(),
+
             // Navigation Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -171,6 +177,7 @@ class _FlashcardScreenState extends State<FlashcardScreen>
                 ),
               ],
             ),
+
             const SizedBox(height: 50),
           ],
         ),
@@ -190,12 +197,12 @@ class _FlashcardScreenState extends State<FlashcardScreen>
             color: Colors.black.withOpacity(0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
-          )
+          ),
         ],
       ),
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.all(30.0),
+          padding: const EdgeInsets.all(30),
           child: Text(
             text,
             textAlign: TextAlign.center,

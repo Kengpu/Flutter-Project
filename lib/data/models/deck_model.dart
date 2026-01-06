@@ -4,6 +4,8 @@ import 'flashcard_model.dart';
 class DeckModel {
   final String id;
   final String title;
+  final String description;
+  final String? coverImage;
   final int totalPoint;
   final int highscore;
   final DeckStatus deckStatus;
@@ -13,6 +15,8 @@ class DeckModel {
   DeckModel({
     required this.id,
     required this.title,
+    required this.description,
+    this.coverImage,
     required this.totalPoint,
     required this.highscore,
     required this.deckStatus,
@@ -23,6 +27,8 @@ class DeckModel {
     return DeckModel(
       id: deck.id,
       title: deck.title,
+      description: deck.description,
+      coverImage: deck.coverImage,
       totalPoint: deck.totalPoint,
       highscore: deck.highscore,
       deckStatus: deck.deckStatus,
@@ -34,6 +40,8 @@ class DeckModel {
     return Deck(
       id: id,
       title: title,
+      description: description,
+      coverImage: coverImage,
       totalPoint: totalPoint,
       highscore: highscore,
       deckStatus: deckStatus,
@@ -45,6 +53,8 @@ class DeckModel {
     return {  
       "id": id,
       "title": title,
+      "description": description,
+      "coverImage": coverImage,
       "totalPoint": totalPoint,
       "highscore": highscore,
       "deckStatus": deckStatus.name,
@@ -56,8 +66,10 @@ class DeckModel {
     return DeckModel(
       id: json["id"],
       title: json["title"], 
-      totalPoint: json["totalPoint"], 
-      highscore:json["highscore"], 
+      description: json["description"] ?? "",
+      coverImage: json["coverImage"],
+      totalPoint: json["totalPoint"] ?? 0, 
+      highscore:json["highscore"] ?? 0, 
       deckStatus: DeckStatus.values.byName(json["deckStatus"]),
       flashcards: (json["flashcards"] as List).map((f) => FlashcardModel.fromJson(f)).toList(),
       );

@@ -16,18 +16,18 @@ class ImagePickerWidget extends StatelessWidget {
     required this.onImageSelected,
   });
 
-  Future<void> _pickImage() async {
+Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 500,
+      imageQuality: 75,
+      );
 
     if (image != null) {
-      if (kIsWeb) {
-        Uint8List imageBytes = await image.readAsBytes();
-        String base64String = base64Encode(imageBytes);
-        onImageSelected(base64String);
-      } else {
-      onImageSelected(image.path);
-      }
+      Uint8List imageBytes = await image.readAsBytes();
+      String base64String = base64Encode(imageBytes);
+      onImageSelected(base64String);
     }
   }
 
