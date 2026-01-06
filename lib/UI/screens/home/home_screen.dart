@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutterapp/UI/screens/editor/deck_form_screen.dart';
 import 'package:flutterapp/UI/screens/study/flashcard_screen.dart';
+import 'package:flutterapp/UI/screens/study/matching_screen.dart';
 import 'package:flutterapp/domain/models/deck.dart';
 import 'package:provider/provider.dart';
 import 'package:flutterapp/UI/providers/deck_provider.dart';
@@ -116,6 +117,7 @@ class HomeScreen extends StatelessWidget {
               _buildModeButton(context, "Matching", Icons.extension, () {
                 Navigator.pop(context);
                 // navigate to matching screen
+                _navigateToMatching(context, deck);
               }),
             ],
           ),
@@ -171,6 +173,13 @@ Widget _buildModeButton(BuildContext context, String label, IconData icon, VoidC
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => FlashcardScreen()),
+      );
+  }
+
+  void _navigateToMatching(BuildContext context, deck) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => MatchingScreen()),
       );
   }
 }

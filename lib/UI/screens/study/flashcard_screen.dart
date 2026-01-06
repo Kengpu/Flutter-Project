@@ -103,6 +103,7 @@ class _FlashcardScreenState extends State<FlashcardScreen>
       appBar: AppBar(
         backgroundColor: AppColors.primaryCyan,
         foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
