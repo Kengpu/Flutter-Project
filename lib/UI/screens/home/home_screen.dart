@@ -2,7 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:flutterapp/UI/screens/editor/deck_form_screen.dart';
-import 'package:flutterapp/UI/screens/study/quiz.dart';
+import 'package:flutterapp/UI/screens/study/quiz_screen.dart';
 import 'package:flutterapp/core/constants/app_colors.dart';
 import 'package:flutterapp/data/datascource/local_database.dart';
 import 'package:flutterapp/data/repositories/deck_repository_impl.dart';

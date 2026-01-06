@@ -48,6 +48,7 @@ class Welcomescreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(25),
                     boxShadow: [
                       BoxShadow(
+                        // ignore: deprecated_member_use
                         color: Colors.black.withOpacity(0.15),
                         spreadRadius: 1,
                         blurRadius: 15,
