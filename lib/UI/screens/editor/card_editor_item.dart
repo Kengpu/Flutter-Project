@@ -27,15 +27,18 @@ class CardEditorItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.textPrimary, // White surface
+        color: theme.colorScheme.surface, // Theme-aware surface color
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -50,8 +53,8 @@ class CardEditorItem extends StatelessWidget {
             children: [
               Text(
                 "CARD ${index + 1}",
-                style: const TextStyle(
-                  color: AppColors.primaryNavy,
+                style: TextStyle(
+                  color: theme.colorScheme.primary,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                   letterSpacing: 1.2,
@@ -59,7 +62,7 @@ class CardEditorItem extends StatelessWidget {
               ),
               IconButton(
                 onPressed: onDelete,
-                icon: const Icon(Icons.delete_outline, color: AppColors.error, size: 22),
+                icon: Icon(Icons.delete_outline, color: theme.colorScheme.error, size: 22),
                 constraints: const BoxConstraints(),
                 padding: EdgeInsets.zero,
               ),
@@ -74,9 +77,9 @@ class CardEditorItem extends StatelessWidget {
               Expanded(
                 child: Column(
                   children: [
-                    _buildField("Term", card.frontText, onFrontChanged),
+                    _buildField(context, "Term", card.frontText, onFrontChanged),
                     const SizedBox(height: 12),
-                    _buildField("Definition", card.backText, onBackChanged),
+                    _buildField(context, "Definition", card.backText, onBackChanged),
                   ],
                 ),
               ),
@@ -91,15 +94,18 @@ class CardEditorItem extends StatelessWidget {
 
           // --- MULTIPLE CHOICE SECTION ---
           if (card.distractors != null && card.distractors!.isNotEmpty) ...[
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 15),
-              child: Divider(color: AppColors.navyLight, thickness: 1),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              child: Divider(
+                color: theme.colorScheme.onSurface.withOpacity(0.1), 
+                thickness: 1
+              ),
             ),
-            const Text(
+            Text(
               "MULTIPLE CHOICE OPTIONS",
               style: TextStyle(
                 fontSize: 10,
-                color: AppColors.textSecondary,
+                color: theme.colorScheme.onSurface.withOpacity(0.6),
                 fontWeight: FontWeight.bold,
                 letterSpacing: 0.5,
               ),
@@ -109,6 +115,7 @@ class CardEditorItem extends StatelessWidget {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: _buildField(
+                  context,
                   "Option ${entry.key + 1}",
                   entry.value,
                   (val) => onDistractorChanged(entry.key, val),
@@ -124,7 +131,7 @@ class CardEditorItem extends StatelessWidget {
             icon: const Icon(Icons.add_circle_outline, size: 18),
             label: const Text("Add Choice"),
             style: TextButton.styleFrom(
-              foregroundColor: AppColors.primaryNavy,
+              foregroundColor: theme.colorScheme.primary,
               padding: const EdgeInsets.symmetric(horizontal: 0),
             ),
           ),
@@ -133,17 +140,22 @@ class CardEditorItem extends StatelessWidget {
     );
   }
 
-  Widget _buildField(String hint, String initialValue, Function(String) onChanged) {
+  Widget _buildField(BuildContext context, String hint, String initialValue, Function(String) onChanged) {
+    final theme = Theme.of(context);
+    
     return TextFormField(
       initialValue: initialValue,
       onChanged: onChanged,
-      style: const TextStyle(fontSize: 14, color: AppColors.textDark),
+      style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+        hintStyle: TextStyle(
+          color: theme.colorScheme.onSurface.withOpacity(0.4), 
+          fontSize: 14
+        ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
         filled: true,
-        fillColor: AppColors.scaffoldBg, // Consistent light background
+        fillColor: theme.colorScheme.background, // Recessed field color
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -154,7 +166,7 @@ class CardEditorItem extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primaryNavy, width: 1),
+          borderSide: BorderSide(color: theme.colorScheme.primary, width: 1.5),
         ),
       ),
     );

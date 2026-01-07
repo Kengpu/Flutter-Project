@@ -80,16 +80,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _handleDelete(String deckId) async {
+    final theme = Theme.of(context);
     bool confirm = await showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            backgroundColor: AppColors.textPrimary,
+            backgroundColor: theme.colorScheme.surface, // Use theme surface
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: const Text("Delete Deck?", style: TextStyle(color: AppColors.textDark)),
-            content: const Text("This action cannot be undone.", style: TextStyle(color: AppColors.textSecondary)),
+            title: Text("Delete Deck?", style: TextStyle(color: theme.colorScheme.onSurface)),
+            content: Text("This action cannot be undone.", 
+                style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.7))),
             actions: [
               TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
-              TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Delete", style: TextStyle(color: AppColors.error))),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true), 
+                child: const Text("Delete", style: TextStyle(color: AppColors.error))
+              ),
             ],
           ),
         ) ?? false;
@@ -102,17 +107,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBg,
+      backgroundColor: theme.scaffoldBackgroundColor, // Switches based on theme
       body: Column(
         children: [
-          _buildHeader(), 
+          _buildHeader(theme), 
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: AppColors.primaryNavy))
+                ? Center(child: CircularProgressIndicator(color: theme.colorScheme.primary))
                 : RefreshIndicator(
                     onRefresh: _loadDecks,
-                    color: AppColors.primaryNavy,
+                    color: theme.colorScheme.primary,
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -120,10 +127,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 10),
-                          const Text("My Study Decks", 
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                          Text("My Study Decks", 
+                            style: TextStyle(
+                              fontSize: 20, 
+                              fontWeight: FontWeight.bold, 
+                              color: theme.colorScheme.onSurface // Black in light, White in dark
+                            )),
                           const SizedBox(height: 15),
-                          _buildDeckGrid(),
+                          _buildDeckGrid(theme),
                           const SizedBox(height: 100),
                         ],
                       ),
@@ -142,39 +153,43 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _goToCreate,
-        backgroundColor: AppColors.primaryNavy,
-        child: const Icon(Icons.add, color: AppColors.textPrimary, size: 30),
+        backgroundColor: theme.colorScheme.primary, // Navy in light, Cyan in dark
+        child: Icon(Icons.add, color: theme.colorScheme.onPrimary, size: 30),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
-  // --- HEADER WITH SAFE AREA (FIXES TOP OVERLAP) ---
-  Widget _buildHeader() {
+  Widget _buildHeader(ThemeData theme) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(25, 5 , 25, 5),
-      decoration: const BoxDecoration(
-        color: AppColors.scaffoldBg, // Keep it seamless with background
+      padding: const EdgeInsets.fromLTRB(25, 60, 25, 5), // Added more top padding for SafeArea feel
+      decoration: BoxDecoration(
+        color: theme.scaffoldBackgroundColor,
       ),
       child: Column(
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Left Side: Title and Subtitle
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text("Study Flow", 
-                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.primaryNavy)),
+                      style: TextStyle(
+                        fontSize: 26, 
+                        fontWeight: FontWeight.bold, 
+                        color: theme.colorScheme.primary // Navy in light, Cyan in dark
+                      )),
                     Text("Ready to learn?", 
-                      style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                      style: TextStyle(
+                        fontSize: 14, 
+                        color: theme.colorScheme.onSurface.withOpacity(0.6)
+                      )),
                   ],
                 ),
               ),
               
-              // Right Side: Compact Level Box
               SizedBox(
                 width: 135, 
                 child: UserLevel(
@@ -187,22 +202,22 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           const SizedBox(height: 20),
-          _buildSearchBox(), // Search is now inside the header area
+          _buildSearchBox(theme),
         ],
       ),
     );
   }
 
-  Widget _buildSearchBox() {
+  Widget _buildSearchBox(ThemeData theme) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 15),
       height: 50,
       decoration: BoxDecoration(
-        color: AppColors.textPrimary,
+        color: theme.colorScheme.surface, // White in light, Dark Gray in dark
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04), 
+            color: Colors.black.withOpacity(theme.brightness == Brightness.light ? 0.04 : 0.2), 
             blurRadius: 15, 
             offset: const Offset(0, 4)
           )
@@ -211,17 +226,24 @@ class _HomeScreenState extends State<HomeScreen> {
       child: TextField(
         controller: _searchController,
         onChanged: _filterDecks,
-        decoration: const InputDecoration(
+        style: TextStyle(color: theme.colorScheme.onSurface),
+        decoration: InputDecoration(
           hintText: "Search decks...",
+          hintStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.4)),
           border: InputBorder.none,
-          icon: Icon(Icons.search, color: AppColors.primaryNavy, size: 22),
+          icon: Icon(Icons.search, color: theme.colorScheme.primary, size: 22),
         ),
       ),
     );
   }
 
-  Widget _buildDeckGrid() {
-    if (_filteredDecks.isEmpty) return const Center(child: Text("No decks found."));
+  Widget _buildDeckGrid(ThemeData theme) {
+    if (_filteredDecks.isEmpty) {
+      return Center(
+        child: Text("No decks found.", 
+          style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)))
+      );
+    }
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -247,39 +269,55 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showOptionsOverlay(Deck deck) {
+    final theme = Theme.of(context);
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.textPrimary,
+      backgroundColor: theme.colorScheme.surface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
       builder: (context) => Padding(
         padding: const EdgeInsets.fromLTRB(30, 15, 30, 40),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.scaffoldBg, borderRadius: BorderRadius.circular(10))),
+            Container(
+              width: 40, 
+              height: 4, 
+              decoration: BoxDecoration(
+                color: theme.dividerColor, 
+                borderRadius: BorderRadius.circular(10)
+              )
+            ),
             const SizedBox(height: 25),
-            Text(deck.title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+            Text(deck.title, 
+              style: TextStyle(
+                fontSize: 22, 
+                fontWeight: FontWeight.bold, 
+                color: theme.colorScheme.onSurface
+              )),
             const SizedBox(height: 30),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _modeIcon(Icons.help_outline, "Quiz", () async { 
+                _modeIcon(theme, Icons.help_outline, "Quiz", () async { 
                   Navigator.pop(context); 
                   final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => QuizScreen(deck: deck))); 
                   if (result == true || result is int){
-                  _loadDecks();
-                  _loadUserStats();
+                    _loadDecks();
+                    _loadUserStats();
                   }
-                  }),
-                _modeIcon(Icons.extension_outlined, "Match", () async { 
+                }),
+                _modeIcon(theme, Icons.extension_outlined, "Match", () async { 
                   Navigator.pop(context); 
                   final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => MatchingScreen(deck: deck))); 
                   if (result == true || result is int) {
-                  _loadDecks();
-                  _loadUserStats();
+                    _loadDecks();
+                    _loadUserStats();
                   }
-                  }),
-                _modeIcon(Icons.style_outlined, "Study", () { Navigator.pop(context); Navigator.push(context, MaterialPageRoute(builder: (_) => FlashcardScreen(deck: deck))); }),
+                }),
+                _modeIcon(theme, Icons.style_outlined, "Study", () { 
+                  Navigator.pop(context); 
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => FlashcardScreen(deck: deck))); 
+                }),
               ],
             ),
           ],
@@ -288,19 +326,27 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _modeIcon(IconData icon, String label, VoidCallback onTap) {
+  Widget _modeIcon(ThemeData theme, IconData icon, String label, VoidCallback onTap) {
     return Column(
       children: [
         InkWell(
           onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
           child: Container(
             width: 70, height: 70, 
-            decoration: BoxDecoration(color: AppColors.navyLight, borderRadius: BorderRadius.circular(20)), 
-            child: Icon(icon, color: AppColors.primaryNavy, size: 30)
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primary.withOpacity(0.1), // Dynamic tint
+              borderRadius: BorderRadius.circular(20)
+            ), 
+            child: Icon(icon, color: theme.colorScheme.primary, size: 30)
           ),
         ),
         const SizedBox(height: 10),
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+        Text(label, 
+          style: TextStyle(
+            fontWeight: FontWeight.w600, 
+            color: theme.colorScheme.onSurface
+          )),
       ],
     );
   }

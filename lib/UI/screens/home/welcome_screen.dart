@@ -13,11 +13,11 @@ class Welcomescreen extends StatelessWidget {
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topCenter,
+            begin: Alignment.topCenter, 
             end: Alignment.bottomCenter,
             colors: [
               AppColors.primaryNavy, // Deep Royal Blue from constants
-              AppColors.navydark,   // Dark Navy from constants
+              AppColors.navyDark,   // Dark Navy from constants
             ],
           ),
         ),
@@ -92,7 +92,7 @@ class Welcomescreen extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 18,
-                        color:AppColors.navydark, // Dark Navy text
+                        color:AppColors.navyDark, // Dark Navy text
                         fontWeight: FontWeight.bold,
                       ),
                     ),

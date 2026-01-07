@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutterapp/core/constants/app_colors.dart'; // Import your colors
+import 'package:flutterapp/core/constants/app_colors.dart';
 
 class QuizResultWidget extends StatelessWidget {
   final int score;
@@ -19,6 +19,10 @@ class QuizResultWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 1. Theme Initialization
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     int percentage = totalQuestions > 0 ? ((score / totalQuestions) * 100).toInt() : 0;
     
     // Performance logic
@@ -37,61 +41,69 @@ class QuizResultWidget extends StatelessWidget {
     } else {
       rank = "Keep Practicing!";
       icon = Icons.menu_book_rounded;
-      accentColor = AppColors.primaryNavy;
+      // 2. Dynamic branding color
+      accentColor = theme.colorScheme.primary; 
     }
 
     return Scaffold(
-      backgroundColor: Colors.black54, 
+      backgroundColor: Colors.black.withOpacity(isDark ? 0.8 : 0.6), 
       body: Center(
         child: Container(
           width: MediaQuery.of(context).size.width * 0.88,
           height: MediaQuery.of(context).size.height * 0.82, 
           padding: const EdgeInsets.all(25),
           decoration: BoxDecoration(
-            color: AppColors.scaffoldBg,
+            color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(30),
-            boxShadow: const [
-              BoxShadow(color: Colors.black45, blurRadius: 20, spreadRadius: 2)
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(isDark ? 0.5 : 0.3), 
+                blurRadius: 20, 
+                spreadRadius: 2
+              )
             ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min, 
             children: [
               // --- ICON & RANK ---
-              // Removed 'const' here because 'icon' and 'accentColor' are dynamic
               Icon(icon, color: accentColor, size: 70),
               const SizedBox(height: 10),
               Text(
                 rank,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 26, 
                   fontWeight: FontWeight.bold, 
-                  color: AppColors.textDark
+                  color: theme.colorScheme.onSurface
                 ),
               ),
               
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 15),
-                child: Divider(thickness: 1),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                child: Divider(thickness: 1, color: theme.dividerColor),
               ),
 
               // --- STATS ROW ---
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildStatItem("Accuracy", "$percentage%"),
-                  _buildStatItem("Score", "$score / $totalQuestions"),
+                  _buildStatItem(theme, "Accuracy", "$percentage%"),
+                  _buildStatItem(theme, "Score", "$score / $totalQuestions"),
                 ],
               ),
               
               const SizedBox(height: 20),
 
               // --- SCROLLABLE REVIEW LIST ---
-              const Align(
+              Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Review Answers", 
-                  style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textSecondary, fontSize: 13)
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold, 
+                    color: theme.colorScheme.onSurface.withOpacity(0.6), 
+                    fontSize: 13
+                  )
                 ),
               ),
               const SizedBox(height: 10),
@@ -99,7 +111,8 @@ class QuizResultWidget extends StatelessWidget {
               Flexible(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.textPrimary.withOpacity(0.5), // White-ish overlay
+                    // 3. Review container background
+                    color: theme.colorScheme.onSurface.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(15),
                   ),
                   child: ListView.builder(
@@ -113,6 +126,7 @@ class QuizResultWidget extends StatelessWidget {
                       final String userText = userAnswerIdx != null ? options[userAnswerIdx] : "No Answer";
                       
                       return _buildCompactReviewRow(
+                        theme,
                         card['frontText'],
                         card['correctAnswer'],
                         userText,
@@ -130,11 +144,11 @@ class QuizResultWidget extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: onRestart,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryNavy,
-                    foregroundColor: AppColors.textPrimary,
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: theme.colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 15),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                    elevation: 5,
+                    elevation: 0, // Material 3 uses 0 elevation for flat look
                   ),
                   child: const Text(
                     "PLAY AGAIN",
@@ -145,9 +159,12 @@ class QuizResultWidget extends StatelessWidget {
               const SizedBox(height: 5),
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text(
+                child: Text(
                   "Exit to Menu",
-                  style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurface.withOpacity(0.5), 
+                    fontWeight: FontWeight.w600
+                  ),
                 ),
               ),
             ],
@@ -157,31 +174,48 @@ class QuizResultWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildStatItem(String label, String value) {
+  Widget _buildStatItem(ThemeData theme, String label, String value) {
     return Column(
       children: [
-        Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-        Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primaryNavy)),
+        Text(label, 
+          style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 12)
+        ),
+        Text(value, 
+          style: TextStyle(
+            fontSize: 20, 
+            fontWeight: FontWeight.bold, 
+            color: theme.colorScheme.primary
+          )
+        ),
       ],
     );
   }
 
-  Widget _buildCompactReviewRow(String question, String correct, String user) {
+  Widget _buildCompactReviewRow(ThemeData theme, String question, String correct, String user) {
     bool isCorrect = correct == user;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.textPrimary, // White
+        // 4. Item background: Surface in light, Primary tint in dark
+        color: isDark ? theme.colorScheme.primary.withOpacity(0.1) : theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.textSecondary.withOpacity(0.1)),
+        border: Border.all(
+          color: theme.colorScheme.onSurface.withOpacity(0.05)
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             question, 
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textDark),
+            style: TextStyle(
+              fontSize: 13, 
+              fontWeight: FontWeight.w600, 
+              color: theme.colorScheme.onSurface
+            ),
             maxLines: 1, 
             overflow: TextOverflow.ellipsis
           ),

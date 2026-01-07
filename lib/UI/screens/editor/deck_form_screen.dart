@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
-import 'package:flutterapp/core/constants/app_colors.dart'; // Import your colors
+import 'package:flutterapp/core/constants/app_colors.dart';
 import 'package:flutterapp/domain/models/deck.dart';
 import 'package:flutterapp/domain/models/flashcard.dart';
 import 'package:flutterapp/data/repositories/deck_repository_impl.dart';
 import 'package:flutterapp/data/datascource/local_database.dart';
 import 'package:flutterapp/UI/widgets/image_picker_widget.dart';
-import 'package:flutterapp/UI/screens/home/home_screen.dart'; // Update path to your actual HomeScreen
+import 'package:flutterapp/UI/screens/home/home_screen.dart';
 
 class CardControllers {
   final TextEditingController termController;
@@ -93,6 +93,7 @@ class _EditDeckScreenState extends State<EditDeckScreen> {
           ),
         )
         .toList();
+        
     final updatedDeck = Deck(
       id: widget.deckToEdit?.id,
       title: _titleController.text,
@@ -100,9 +101,9 @@ class _EditDeckScreenState extends State<EditDeckScreen> {
       coverImage: _deckImageBase64,
       flashcards: finalCards,
     );
+    
     if (widget.deckToEdit == null) {
       await _deckRepo.addDeck(updatedDeck);
-
       if (mounted) {
         Navigator.pushAndRemoveUntil(
           context,
@@ -118,11 +119,13 @@ class _EditDeckScreenState extends State<EditDeckScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBg,
+      backgroundColor: theme.colorScheme.background,
       body: Column(
         children: [
-          _buildCustomAppBar(),
+          _buildCustomAppBar(context),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -130,17 +133,17 @@ class _EditDeckScreenState extends State<EditDeckScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 10),
-                  _buildSectionTitle("Deck Details"),
+                  _buildSectionTitle(context, "Deck Details"),
                   const SizedBox(height: 10),
-                  _buildDeckHeader(),
+                  _buildDeckHeader(context),
                   const SizedBox(height: 30),
-                  _buildSectionTitle("Flashcards (${_cardControllers.length})"),
+                  _buildSectionTitle(context, "Flashcards (${_cardControllers.length})"),
                   const SizedBox(height: 10),
                   ..._cardControllers.asMap().entries.map(
-                    (entry) => _buildCardEditor(entry.value, entry.key),
+                    (entry) => _buildCardEditor(context, entry.value, entry.key),
                   ),
                   const SizedBox(height: 20),
-                  _buildAddCardButton(),
+                  _buildAddCardButton(context),
                   const SizedBox(height: 120),
                 ],
               ),
@@ -148,16 +151,17 @@ class _EditDeckScreenState extends State<EditDeckScreen> {
           ),
         ],
       ),
-      bottomSheet: _buildBottomActions(),
+      bottomSheet: _buildBottomActions(context),
     );
   }
 
-  Widget _buildCustomAppBar() {
+  Widget _buildCustomAppBar(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.fromLTRB(10, 50, 20, 20),
-      decoration: const BoxDecoration(
-        color: AppColors.primaryNavy,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primary,
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(30),
           bottomRight: Radius.circular(30),
         ),
@@ -166,13 +170,13 @@ class _EditDeckScreenState extends State<EditDeckScreen> {
         children: [
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.close, color: AppColors.textPrimary),
+            icon: Icon(Icons.close, color: theme.colorScheme.onPrimary),
           ),
           const SizedBox(width: 10),
           Text(
             widget.deckToEdit == null ? "Create New Deck" : "Edit Deck",
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style: TextStyle(
+              color: theme.colorScheme.onPrimary,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -182,26 +186,31 @@ class _EditDeckScreenState extends State<EditDeckScreen> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(BuildContext context, String title) {
+    final theme = Theme.of(context);
     return Text(
       title,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.bold,
-        color: AppColors.textSecondary,
+        color: theme.colorScheme.onBackground.withOpacity(0.6),
         letterSpacing: 0.5,
       ),
     );
   }
 
-  Widget _buildDeckHeader() {
+  Widget _buildDeckHeader(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.textPrimary,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10),
+          BoxShadow(
+            color: Colors.black.withOpacity(theme.brightness == Brightness.dark ? 0.2 : 0.03), 
+            blurRadius: 10
+          ),
         ],
       ),
       child: Row(
@@ -210,35 +219,32 @@ class _EditDeckScreenState extends State<EditDeckScreen> {
           Expanded(
             child: Column(
               children: [
-                _buildStyledField(_titleController, "Deck Title", Icons.title),
+                _buildStyledField(context, _titleController, "Deck Title", Icons.title),
                 const SizedBox(height: 12),
-                _buildStyledField(
-                  _descController,
-                  "Description (Optional)",
-                  Icons.notes,
-                ),
+                _buildStyledField(context, _descController, "Description (Optional)", Icons.notes),
               ],
             ),
           ),
           const SizedBox(width: 15),
-          _buildImagePickerWrapper(
-            _deckImageBase64,
-            (base64) => setState(() => _deckImageBase64 = base64),
-          ),
+          _buildImagePickerWrapper(context, _deckImageBase64, (base64) => setState(() => _deckImageBase64 = base64)),
         ],
       ),
     );
   }
 
-  Widget _buildCardEditor(CardControllers controllers, int index) {
+  Widget _buildCardEditor(BuildContext context, CardControllers controllers, int index) {
+    final theme = Theme.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.textPrimary,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10),
+          BoxShadow(
+            color: Colors.black.withOpacity(theme.brightness == Brightness.dark ? 0.2 : 0.03), 
+            blurRadius: 10
+          ),
         ],
       ),
       child: Column(
@@ -249,20 +255,15 @@ class _EditDeckScreenState extends State<EditDeckScreen> {
             children: [
               Text(
                 "CARD ${index + 1}",
-                style: const TextStyle(
-                  color: AppColors.primaryNavy,
+                style: TextStyle(
+                  color: theme.colorScheme.primary,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
               ),
               IconButton(
-                onPressed: () =>
-                    setState(() => _cardControllers.removeAt(index)),
-                icon: const Icon(
-                  Icons.delete_outline,
-                  color: AppColors.error,
-                  size: 20,
-                ),
+                onPressed: () => setState(() => _cardControllers.removeAt(index)),
+                icon: Icon(Icons.delete_outline, color: theme.colorScheme.error, size: 20),
               ),
             ],
           ),
@@ -272,44 +273,33 @@ class _EditDeckScreenState extends State<EditDeckScreen> {
               Expanded(
                 child: Column(
                   children: [
-                    _buildStyledField(controllers.termController, "Term", null),
+                    _buildStyledField(context, controllers.termController, "Term", null),
                     const SizedBox(height: 12),
-                    _buildStyledField(
-                      controllers.definitionController,
-                      "Definition",
-                      null,
-                    ),
+                    _buildStyledField(context, controllers.definitionController, "Definition", null),
                   ],
                 ),
               ),
               const SizedBox(width: 15),
-              _buildImagePickerWrapper(
-                controllers.imageBase64,
-                (base64) => setState(() => controllers.imageBase64 = base64),
-              ),
+              _buildImagePickerWrapper(context, controllers.imageBase64, (base64) => setState(() => controllers.imageBase64 = base64)),
             ],
           ),
           if (controllers.distractorControllers.isNotEmpty) ...[
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 15),
-              child: Divider(height: 1, color: AppColors.scaffoldBg),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              child: Divider(height: 1, color: theme.colorScheme.background),
             ),
-            const Text(
+            Text(
               "MULTIPLE CHOICE OPTIONS",
               style: TextStyle(
                 fontSize: 10,
-                color: AppColors.textSecondary,
+                color: theme.colorScheme.onSurface.withOpacity(0.5),
                 fontWeight: FontWeight.bold,
               ),
             ),
             ...controllers.distractorControllers.asMap().entries.map((entry) {
               return Padding(
                 padding: const EdgeInsets.only(top: 10),
-                child: _buildStyledField(
-                  entry.value,
-                  "Option ${entry.key + 1}",
-                  null,
-                ),
+                child: _buildStyledField(context, entry.value, "Option ${entry.key + 1}", null),
               );
             }),
           ],
@@ -318,84 +308,71 @@ class _EditDeckScreenState extends State<EditDeckScreen> {
             onPressed: () => setState(() => controllers.addDistractor()),
             icon: const Icon(Icons.add_circle_outline, size: 18),
             label: const Text("Add Choice"),
-            style: TextButton.styleFrom(foregroundColor: AppColors.primaryNavy),
+            style: TextButton.styleFrom(foregroundColor: theme.colorScheme.primary),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildImagePickerWrapper(
-    String? imagePath,
-    Function(String) onSelected,
-  ) {
+  Widget _buildImagePickerWrapper(BuildContext context, String? imagePath, Function(String) onSelected) {
+    final theme = Theme.of(context);
     return Container(
       width: 80,
       height: 80,
       decoration: BoxDecoration(
-        color: AppColors.scaffoldBg,
+        color: theme.colorScheme.background,
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: AppColors.primaryNavy.withOpacity(0.1)),
+        border: Border.all(color: theme.colorScheme.primary.withOpacity(0.1)),
       ),
-      child: Stack(
-        children: [
-          ImagePickerWidget(
-            imagePath: imagePath,
-            size: 80,
-            onImageSelected: onSelected,
-          ),
-        ],
+      child: ImagePickerWidget(
+        imagePath: imagePath,
+        size: 80,
+        onImageSelected: onSelected,
       ),
     );
   }
 
-  Widget _buildStyledField(
-    TextEditingController controller,
-    String hint,
-    IconData? icon,
-  ) {
+  Widget _buildStyledField(BuildContext context, TextEditingController controller, String hint, IconData? icon) {
+    final theme = Theme.of(context);
     return TextField(
       controller: controller,
-      style: const TextStyle(fontSize: 14, color: AppColors.textDark),
+      style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(color: AppColors.textSecondary),
-        prefixIcon: icon != null
-            ? Icon(icon, size: 20, color: AppColors.primaryNavy)
-            : null,
+        hintStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.4)),
+        prefixIcon: icon != null ? Icon(icon, size: 20, color: theme.colorScheme.primary) : null,
         filled: true,
-        fillColor: AppColors.scaffoldBg,
+        fillColor: theme.colorScheme.background,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 15,
-          vertical: 15,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
       ),
     );
   }
 
-  Widget _buildAddCardButton() {
+  Widget _buildAddCardButton(BuildContext context) {
+    final theme = Theme.of(context);
     return InkWell(
       onTap: _addCard,
       borderRadius: BorderRadius.circular(15),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 15),
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.primaryNavy, width: 1.5),
+          border: Border.all(color: theme.colorScheme.primary, width: 1.5),
           borderRadius: BorderRadius.circular(15),
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add, color: AppColors.primaryNavy),
-            SizedBox(width: 10),
+            Icon(Icons.add, color: theme.colorScheme.primary),
+            const SizedBox(width: 10),
             Text(
               "Add New Card",
               style: TextStyle(
-                color: AppColors.primaryNavy,
+                color: theme.colorScheme.primary,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -405,11 +382,12 @@ class _EditDeckScreenState extends State<EditDeckScreen> {
     );
   }
 
-  Widget _buildBottomActions() {
+  Widget _buildBottomActions(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
       decoration: BoxDecoration(
-        color: AppColors.textPrimary,
+        color: theme.colorScheme.surface,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -423,10 +401,10 @@ class _EditDeckScreenState extends State<EditDeckScreen> {
           Expanded(
             child: TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
+              child: Text(
                 "Cancel",
                 style: TextStyle(
-                  color: AppColors.textSecondary,
+                  color: theme.colorScheme.onSurface.withOpacity(0.6),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -437,19 +415,15 @@ class _EditDeckScreenState extends State<EditDeckScreen> {
             child: ElevatedButton(
               onPressed: _saveDeck,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryNavy,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: theme.colorScheme.onPrimary,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 padding: const EdgeInsets.symmetric(vertical: 15),
                 elevation: 0,
               ),
               child: const Text(
                 "Save Deck",
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
           ),

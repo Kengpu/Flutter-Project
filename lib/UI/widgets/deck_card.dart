@@ -6,7 +6,7 @@ import 'package:flutterapp/domain/models/deck.dart';
 class DeckCard extends StatelessWidget {
   final Deck deck;
   final VoidCallback onTap;
-  final Function(String) onActionSelected; // Passes 'edit' or 'delete' back
+  final Function(String) onActionSelected;
 
   const DeckCard({
     super.key,
@@ -17,6 +17,9 @@ class DeckCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 1. Initialize Theme Engine
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     bool hasImage = deck.coverImage != null && deck.coverImage!.isNotEmpty;
 
     return GestureDetector(
@@ -25,30 +28,33 @@ class DeckCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
+          // 2. Dynamic Gradient: Shifts from Navy/Light-Blue to Slate/Cyan
           gradient: !hasImage
-              ? const LinearGradient(
-                  colors: [AppColors.navyLight, AppColors.primaryNavy],
+              ? LinearGradient(
+                  colors: isDark 
+                    ? [const Color(0xFF1E293B), theme.colorScheme.primary.withOpacity(0.7)] 
+                    : [AppColors.navyLight, theme.colorScheme.primary], 
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 )
               : null,
           boxShadow: [
             BoxShadow(
-              color: AppColors.primaryNavy.withOpacity(0.2),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
+              color: theme.colorScheme.primary.withOpacity(isDark ? 0.3 : 0.15),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
             )
           ],
         ),
         child: Stack(
           children: [
-
             // --- Background Image Overlay ---
             if (hasImage)
               Positioned.fill(
                 child: ColorFiltered(
                   colorFilter: ColorFilter.mode(
-                    Colors.black.withOpacity(0.35),
+                    // 3. Image Contrast: Darker in dark mode to make white text pop
+                    Colors.black.withOpacity(isDark ? 0.55 : 0.35), 
                     BlendMode.darken,
                   ),
                   child: Image.memory(
@@ -62,8 +68,9 @@ class DeckCard extends StatelessWidget {
             Positioned(
               top: 12,
               left: 12,
-              child: _buildStatusTag(deck.deckStatus),
+              child: _buildStatusTag(context, deck.deckStatus),
             ),
+
             // --- Text Content ---
             Padding(
               padding: const EdgeInsets.all(16),
@@ -71,30 +78,27 @@ class DeckCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (!hasImage)
-                    const Icon(
-                      Icons.folder_copy_rounded, 
-                      color: AppColors.textSecondary, 
-                      size: 30
-                    ),
                   const Spacer(),
                   Text(
                     deck.title,
                     style: const TextStyle(
-                      color: AppColors.textPrimary, 
+                      color: Colors.white, // Locked to white for readability on image/gradient
                       fontWeight: FontWeight.bold,
                       fontSize: 17,
-                      shadows: [Shadow(color: Colors.black45, blurRadius: 8)],
+                      letterSpacing: -0.2,
+                      shadows: [Shadow(color: Colors.black54, blurRadius: 6)],
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
+                  const SizedBox(height: 2),
                   Text(
                     "${deck.flashcards.length} Cards",
-                    style: const TextStyle(
-                      color: AppColors.textPrimary, // White
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.85),
                       fontSize: 12,
-                      shadows: [Shadow(color: Colors.black45, blurRadius: 4)],
+                      fontWeight: FontWeight.w500,
+                      shadows: const [Shadow(color: Colors.black38, blurRadius: 4)],
                     ),
                   ),
                 ],
@@ -103,30 +107,35 @@ class DeckCard extends StatelessWidget {
 
             // --- Menu Button ---
             Positioned(
-              top: 2,
-              right: 2,
+              top: 4,
+              right: 4,
               child: PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert, color: AppColors.textSecondary),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                icon: Icon(
+                  Icons.more_vert_rounded, 
+                  color: Colors.white.withOpacity(0.9), // White works best on card backgrounds
+                ),
+                color: theme.colorScheme.surface, 
+                elevation: 4,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 onSelected: onActionSelected,
                 itemBuilder: (context) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'edit',
                     child: Row(
                       children: [
-                        Icon(Icons.edit, size: 18, color: AppColors.primaryNavy),
-                        SizedBox(width: 8),
-                        Text("Edit Deck"),
+                        Icon(Icons.edit_rounded, size: 18, color: theme.colorScheme.primary),
+                        const SizedBox(width: 12),
+                        Text("Edit Deck", style: TextStyle(color: theme.colorScheme.onSurface)),
                       ],
                     ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'delete',
                     child: Row(
                       children: [
-                        Icon(Icons.delete, size: 18, color: AppColors.error),
-                        SizedBox(width: 8),
-                        Text("Delete", style: TextStyle(color: AppColors.error)),
+                        const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.error),
+                        const SizedBox(width: 12),
+                        const Text("Delete", style: TextStyle(color: AppColors.error)),
                       ],
                     ),
                   ),
@@ -139,43 +148,34 @@ class DeckCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusTag(DeckStatus status) {
+  Widget _buildStatusTag(BuildContext context, DeckStatus status) {
     if(status == DeckStatus.newDeck) return const SizedBox.shrink();
+    
     Color color;
     String text;
 
     switch (status) {
-      case DeckStatus.struggling:
-        color = Colors.red;
-        text = "Struggling";
-        break;
-      case DeckStatus.uncertain:
-        color = Colors.orange;
-        text = "Uncertain";
-        break;
-      case DeckStatus.confident: 
-        color = Colors.blue;
-        text = "Confident";
-        break;
-      case DeckStatus.mastered: 
-        color = Colors.green;
-        text = "Mastered";
-        break;
-      case DeckStatus.newDeck: 
-        color = Colors.grey;
-        text = "New";
+      case DeckStatus.struggling: color = AppColors.error; text = "Struggling"; break;
+      case DeckStatus.uncertain: color = Colors.orange; text = "Uncertain"; break;
+      case DeckStatus.confident: color = const Color(0xFF00B4D8); text = "Confident"; break;
+      case DeckStatus.mastered: color = AppColors.success; text = "Mastered"; break;
+      default: color = Colors.grey; text = "New"; break;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color, width: 1.5),
+        color: color.withOpacity(0.9), // Slight transparency for glass effect
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         text.toUpperCase(),
-        style: TextStyle(color: AppColors.textPrimary, fontSize: 9, fontWeight: FontWeight.bold),
+        style: const TextStyle(
+          color: Colors.white, 
+          fontSize: 8, 
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.5,
+        ),
       ),
     );
   }

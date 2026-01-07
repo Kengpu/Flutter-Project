@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math';
-import 'package:flutterapp/core/constants/app_colors.dart'; // Import your colors
+import 'package:flutterapp/core/constants/app_colors.dart';
 import 'package:flutterapp/data/datascource/local_database.dart';
 import 'package:flutterapp/data/repositories/user_repository_impl.dart';
 import 'package:flutterapp/domain/models/deck.dart';
@@ -48,7 +48,6 @@ class _MatchingGameScreenState extends State<MatchingScreen> {
 
   void _setupGame() {
     _timer?.cancel();
-
     setState(() {
       gameFinished = false;
       _secondsElapsed = 0;
@@ -60,7 +59,6 @@ class _MatchingGameScreenState extends State<MatchingScreen> {
         flatList.add(GameItem(text: card.frontText, matchId: card.id ?? ""));
         flatList.add(GameItem(text: card.backText, matchId: card.id ?? ""));
       }
-
       flatList.shuffle();
     });
 
@@ -72,21 +70,17 @@ class _MatchingGameScreenState extends State<MatchingScreen> {
 
   void _onWin() async {
     _timer?.cancel();
-
     int pairsCount = widget.deck.flashcards.length;
     int basePoints = pairsCount * 7;
     int targetTimeSeconds = pairsCount * 60;
-    int halfTime = targetTimeSeconds ~/2;
+    int halfTime = targetTimeSeconds ~/ 2;
 
     double multiplier = 1.0;
-    
     if (_secondsElapsed < halfTime) {
       multiplier = 2.0;
     } else if (_secondsElapsed < targetTimeSeconds) {
       double progress = (_secondsElapsed - halfTime) / (targetTimeSeconds - halfTime);
       multiplier = 2.0 - progress;
-    } else {
-      multiplier = 1.0;
     }
 
     pointsEarned = (basePoints * multiplier).toInt();
@@ -109,25 +103,19 @@ class _MatchingGameScreenState extends State<MatchingScreen> {
       firstSelectedIndex = index;
     } else {
       isProcessing = true;
-      
       if (flatList[firstSelectedIndex!].matchId == flatList[index].matchId) {
         await Future.delayed(const Duration(milliseconds: 300));
         setState(() {
           flatList[firstSelectedIndex!].isMatched = true;
           flatList[index].isMatched = true;
         });
-
-        if (flatList.every((item) => item.isMatched)) {
-          _onWin();
-        }
+        if (flatList.every((item) => item.isMatched)) _onWin();
       } else {
         setState(() {
           flatList[firstSelectedIndex!].isError = true;
           flatList[index].isError = true;
         });
-
         await Future.delayed(const Duration(milliseconds: 600));
-
         setState(() {
           flatList[firstSelectedIndex!].isSelected = false;
           flatList[index].isSelected = false;
@@ -135,7 +123,6 @@ class _MatchingGameScreenState extends State<MatchingScreen> {
           flatList[index].isError = false;
         });
       }
-
       firstSelectedIndex = null;
       isProcessing = false;
     }
@@ -146,14 +133,16 @@ class _MatchingGameScreenState extends State<MatchingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBg,
+      backgroundColor: theme.colorScheme.background,
       body: Stack(
         children: [
           SafeArea(
             child: Column(
               children: [
-                _buildHeader(),
+                _buildHeader(context),
                 Expanded(
                   child: GridView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -164,7 +153,7 @@ class _MatchingGameScreenState extends State<MatchingScreen> {
                       childAspectRatio: 1.4,
                     ),
                     itemCount: flatList.length,
-                    itemBuilder: (context, index) => _buildCard(flatList[index], index),
+                    itemBuilder: (context, index) => _buildCard(context, flatList[index], index),
                   ),
                 ),
               ],
@@ -181,30 +170,31 @@ class _MatchingGameScreenState extends State<MatchingScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.all(10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-            icon: const Icon(Icons.close, color: AppColors.primaryNavy),
+            icon: Icon(Icons.close, color: theme.colorScheme.primary),
             onPressed: () => Navigator.pop(context),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.primaryNavy.withOpacity(0.1),
+              color: theme.colorScheme.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
               children: [
-                const Icon(Icons.timer_outlined, color: AppColors.primaryNavy, size: 18),
+                Icon(Icons.timer_outlined, color: theme.colorScheme.primary, size: 18),
                 const SizedBox(width: 8),
                 Text(
                   _formatTime(_secondsElapsed),
-                  style: const TextStyle(
-                    color: AppColors.primaryNavy, 
+                  style: TextStyle(
+                    color: theme.colorScheme.primary, 
                     fontWeight: FontWeight.bold
                   ),
                 ),
@@ -217,7 +207,29 @@ class _MatchingGameScreenState extends State<MatchingScreen> {
     );
   }
 
-  Widget _buildCard(GameItem item, int index) {
+  Widget _buildCard(BuildContext context, GameItem item, int index) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    Color cardColor;
+    Color textColor;
+    Color borderColor = Colors.transparent;
+    
+    if (item.isError) {
+      cardColor = isDark ? const Color(0xFFFF8A80).withOpacity(0.2) : AppColors.error;
+      textColor = isDark ? const Color(0xFFFF8A80) : Colors.white;
+      borderColor = isDark ? const Color(0xFFFF8A80) : Colors.transparent;
+    } else if (item.isSelected) {
+      // FIX: Light Mode Selection Visibility
+      cardColor = isDark ? theme.colorScheme.primary : Colors.white; 
+      textColor = isDark ? theme.colorScheme.onPrimary : theme.colorScheme.primary;
+      borderColor = theme.colorScheme.primary; 
+    } else {
+      cardColor = isDark ? theme.colorScheme.surface : theme.colorScheme.primary;
+      textColor = isDark ? theme.colorScheme.onSurface : Colors.white;
+      borderColor = Colors.transparent;
+    }
+
     return GestureDetector(
       onTap: () => _handleTap(index),
       child: AnimatedOpacity(
@@ -234,22 +246,18 @@ class _MatchingGameScreenState extends State<MatchingScreen> {
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: item.isError
-                      ? AppColors.error
-                      : item.isSelected
-                          ? AppColors.textPrimary 
-                          : AppColors.primaryNavy, 
+                  color: cardColor,
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primaryNavy.withOpacity(0.15),
+                      color: theme.colorScheme.primary.withOpacity(isDark ? 0.1 : 0.15),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     )
                   ],
                   border: Border.all(
-                    color: item.isSelected ? AppColors.primaryNavy : Colors.transparent,
-                    width: 2,
+                    color: borderColor,
+                    width: 3, 
                   ),
                 ),
                 alignment: Alignment.center,
@@ -261,9 +269,7 @@ class _MatchingGameScreenState extends State<MatchingScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: item.isSelected || item.isError 
-                        ? AppColors.primaryNavy 
-                        : AppColors.textPrimary,
+                    color: textColor,
                   ),
                 ),
               ),

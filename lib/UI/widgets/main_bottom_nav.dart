@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutterapp/core/constants/app_colors.dart';
 import 'package:flutterapp/UI/screens/home/home_screen.dart';
-// Using the import path you provided
 import 'package:flutterapp/UI/screens/home/settings_screen.dart'; 
 
 class MainBottomNav extends StatelessWidget {
@@ -9,13 +8,20 @@ class MainBottomNav extends StatelessWidget {
 
   const MainBottomNav({
     super.key,
-    required this.currentIndex, required Null Function(dynamic index) onTabSelected,
+    required this.currentIndex, required Null Function(dynamic index) onTabSelected, 
+    // Removed the unused onTabSelected parameter to keep it clean, 
+    // as navigation is handled inside onPressed here.
   });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return BottomAppBar(
-      color: AppColors.textPrimary,
+      // 1. Dynamic Background: White in Light Mode, Dark Surface in Dark Mode
+      color: theme.colorScheme.surface,
+      elevation: 10,
       shape: const CircularNotchedRectangle(),
       notchMargin: 8.0,
       child: SizedBox(
@@ -27,7 +33,10 @@ class MainBottomNav extends StatelessWidget {
             IconButton(
               icon: Icon(
                 Icons.home_filled,
-                color: currentIndex == 0 ? AppColors.primaryNavy : AppColors.textSecondary,
+                // 2. Active color: Navy in Light Mode, Cyan in Dark Mode
+                color: currentIndex == 0 
+                    ? theme.colorScheme.primary 
+                    : theme.colorScheme.onSurface.withOpacity(0.4),
               ),
               onPressed: () {
                 if (currentIndex != 0) {
@@ -46,7 +55,10 @@ class MainBottomNav extends StatelessWidget {
             IconButton(
               icon: Icon(
                 Icons.settings,
-                color: currentIndex == 1 ? AppColors.primaryNavy : AppColors.textSecondary,
+                // 2. Active color logic repeated
+                color: currentIndex == 1 
+                    ? theme.colorScheme.primary 
+                    : theme.colorScheme.onSurface.withOpacity(0.4),
               ),
               onPressed: () {
                 if (currentIndex != 1) {

@@ -17,21 +17,28 @@ class UserLevel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 1. Initialize Theme
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     double progress = currentExp / totalExpNeeded;
 
     return Container(
-      // Reduced padding for a tighter fit in the header
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.textPrimary,
+        // 2. Surface color adapts to theme
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
         ],
+        // 3. Subtle border for dark mode to define the card edge
+        border: isDark 
+            ? Border.all(color: theme.colorScheme.onSurface.withOpacity(0.05)) 
+            : null,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -39,19 +46,19 @@ class UserLevel extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Simplified Level Text
               Text(
                 "Lvl $level",
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
-                  color: AppColors.primaryNavy,
+                  // 4. Color follows primary (Navy vs Cyan)
+                  color: theme.colorScheme.primary,
                 ),
               ),
-              // Compact Streak
               Row(
                 children: [
                   const Icon(Icons.local_fire_department, color: Colors.orange, size: 14),
+                  const SizedBox(width: 2),
                   Text(
                     "$streak",
                     style: const TextStyle(
@@ -71,19 +78,21 @@ class UserLevel extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 5,
-              backgroundColor: AppColors.scaffoldBg,
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryNavy),
+              // 5. Background adapts to surface variant or scaffold bg
+              backgroundColor: isDark 
+                  ? theme.colorScheme.onSurface.withOpacity(0.1) 
+                  : AppColors.scaffoldBg,
+              valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
             ),
           ),
           const SizedBox(height: 4),
-          // Micro XP Text
           Align(
             alignment: Alignment.centerRight,
             child: Text(
               "$currentExp/$totalExpNeeded XP",
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 9,
-                color: AppColors.textSecondary,
+                color: theme.colorScheme.onSurface.withOpacity(0.6),
                 fontWeight: FontWeight.bold,
               ),
             ),

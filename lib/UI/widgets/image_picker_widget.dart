@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutterapp/core/constants/app_colors.dart'; // Import your colors
+import 'package:flutterapp/core/constants/app_colors.dart'; 
 import 'package:flutterapp/UI/widgets/image_view.dart';
 
 class ImagePickerWidget extends StatelessWidget {
@@ -34,17 +34,24 @@ class ImagePickerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 1. Initialize Theme
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: _pickImage,
       child: Container(
         width: size,
         height: size,
         decoration: BoxDecoration(
-          // Uses a light navy tint for the empty state background
-          color: AppColors.primaryNavy.withOpacity(0.05),
+          // 2. Dynamic Background: Light Navy for light theme, Surface color for dark
+          color: isDark 
+              ? theme.colorScheme.surfaceVariant.withOpacity(0.5) 
+              : AppColors.primaryNavy.withOpacity(0.05),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: AppColors.primaryNavy.withOpacity(0.1),
+            // 3. Dynamic Border: Use primary color (Navy/Cyan) at low opacity
+            color: theme.colorScheme.primary.withOpacity(0.2),
             width: 1.5,
           ),
         ),
@@ -53,19 +60,20 @@ class ImagePickerWidget extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 child: ImageView(imageSource: imagePath, fit: BoxFit.cover),
               )
-            : const Column(
+            : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
                     Icons.add_photo_alternate_outlined,
-                    color: AppColors.primaryNavy,
+                    // 4. Icon color follows Primary (Navy or Cyan)
+                    color: theme.colorScheme.primary,
                     size: 28,
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     "Add",
                     style: TextStyle(
-                      color: AppColors.primaryNavy,
+                      color: theme.colorScheme.primary,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                     ),

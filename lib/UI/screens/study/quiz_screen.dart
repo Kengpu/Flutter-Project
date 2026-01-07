@@ -3,13 +3,11 @@ import 'dart:convert';
 import 'package:flutterapp/core/constants/app_colors.dart'; 
 import 'package:flutterapp/UI/widgets/quiz_result.dart';
 import 'package:flutterapp/data/datascource/local_database.dart';
-import 'package:flutterapp/data/models/user_stats_model.dart';
 import 'package:flutterapp/data/repositories/deck_repository_impl.dart';
 import 'package:flutterapp/data/repositories/user_repository_impl.dart';
 import 'package:flutterapp/domain/models/deck.dart';
 import 'package:flutterapp/domain/models/flashcard.dart';
 import 'dart:math';
-
 import 'package:flutterapp/domain/models/user_stats.dart';
 
 class QuizScreen extends StatefulWidget {
@@ -32,7 +30,6 @@ class _QuizScreenState extends State<QuizScreen> {
 
   DeckStatus newStatus(int score, int total) {
     double percentage = (score / total) * 100;
-
     if (percentage <= 40) return DeckStatus.struggling;
     if (percentage <= 70) return DeckStatus.uncertain;
     if (percentage <= 90) return DeckStatus.confident;
@@ -113,17 +110,20 @@ class _QuizScreenState extends State<QuizScreen> {
     stats.updateStreak();
     await userRepo.updateUserStats(stats);
   
-    setState(() {
-      _gameFinished = true;
-    });
+    setState(() => _gameFinished = true);
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     if (_quizData.isEmpty) {
-      return const Scaffold(
-        backgroundColor: AppColors.scaffoldBg,
-        body: Center(child: Text("No questions.", style: TextStyle(color: AppColors.textSecondary))),
+      return Scaffold(
+        backgroundColor: theme.colorScheme.background,
+        body: Center(
+          child: Text("No questions.", 
+            style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6)))
+        ),
       );
     }
 
@@ -142,11 +142,11 @@ class _QuizScreenState extends State<QuizScreen> {
     final progress = (_currentIndex + 1) / _quizData.length;
 
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBg,
+      backgroundColor: theme.colorScheme.background,
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
-        foregroundColor: AppColors.primaryNavy,
+        foregroundColor: theme.colorScheme.primary,
         title: const Text("Quiz Mode", style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
@@ -161,8 +161,8 @@ class _QuizScreenState extends State<QuizScreen> {
                 tween: Tween<double>(begin: 0, end: progress),
                 builder: (context, value, _) => LinearProgressIndicator(
                   value: value,
-                  backgroundColor: AppColors.textPrimary,
-                  color: AppColors.primaryNavy,
+                  backgroundColor: theme.colorScheme.surfaceVariant,
+                  color: theme.colorScheme.primary,
                   minHeight: 8,
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -176,7 +176,10 @@ class _QuizScreenState extends State<QuizScreen> {
                     return FadeTransition(
                       opacity: animation,
                       child: SlideTransition(
-                        position: Tween<Offset>(begin: const Offset(0.1, 0), end: Offset.zero).animate(animation),
+                        position: Tween<Offset>(
+                          begin: const Offset(0.1, 0), 
+                          end: Offset.zero
+                        ).animate(animation),
                         child: child,
                       ),
                     );
@@ -184,9 +187,11 @@ class _QuizScreenState extends State<QuizScreen> {
                   child: Column(
                     key: ValueKey<int>(_currentIndex), 
                     children: [
-                      _buildQuestionCard(currentCard),
+                      _buildQuestionCard(context, currentCard),
                       const SizedBox(height: 30),
-                      ...List.generate(options.length, (i) => _buildOptionTile(options[i], i, currentCard['correctAnswer'])),
+                      ...List.generate(options.length, 
+                        (i) => _buildOptionTile(context, options[i], i, currentCard['correctAnswer'])
+                      ),
                     ],
                   ),
                 ),
@@ -198,15 +203,20 @@ class _QuizScreenState extends State<QuizScreen> {
     );
   }
 
-  Widget _buildQuestionCard(Map<String, dynamic> card) {
+  Widget _buildQuestionCard(BuildContext context, Map<String, dynamic> card) {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(25),
       decoration: BoxDecoration(
-        color: AppColors.primaryNavy,
+        color: theme.colorScheme.primary,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(color: AppColors.primaryNavy.withOpacity(0.2), blurRadius: 15, offset: const Offset(0, 8))
+          BoxShadow(
+            color: theme.colorScheme.primary.withOpacity(0.2), 
+            blurRadius: 15, 
+            offset: const Offset(0, 8)
+          )
         ],
       ),
       child: Column(
@@ -214,13 +224,21 @@ class _QuizScreenState extends State<QuizScreen> {
           if (card['image'] != null && card['image'].isNotEmpty) ...[
             ClipRRect(
               borderRadius: BorderRadius.circular(15),
-              child: Image.memory(base64Decode(card['image']), height: 140, fit: BoxFit.cover),
+              child: Image.memory(
+                base64Decode(card['image']), 
+                height: 140, 
+                fit: BoxFit.cover
+              ),
             ),
             const SizedBox(height: 20),
           ],
           Text(
             card['frontText'],
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            style: TextStyle(
+              fontSize: 22, 
+              fontWeight: FontWeight.bold, 
+              color: theme.colorScheme.onPrimary
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -228,21 +246,22 @@ class _QuizScreenState extends State<QuizScreen> {
     );
   }
 
-  Widget _buildOptionTile(String text, int index, String correctAnswer) {
-    Color cardColor = AppColors.textPrimary;
-    Color textColor = AppColors.textDark;
-    Color borderColor = AppColors.textDark.withOpacity(0.05);
+  Widget _buildOptionTile(BuildContext context, String text, int index, String correctAnswer) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    Color cardColor = theme.colorScheme.surface;
+    Color textColor = theme.colorScheme.onSurface;
+    Color borderColor = theme.colorScheme.onSurface.withOpacity(0.1);
 
     if (_showFeedback) {
       if (text == correctAnswer) {
-        // Highlighting correct answer in Green
-        cardColor = const Color(0xFFE8F5E9); 
-        textColor = const Color(0xFF2E7D32);
+        cardColor = isDark ? const Color(0xFF1B5E20) : const Color(0xFFE8F5E9); 
+        textColor = isDark ? Colors.green[100]! : const Color(0xFF2E7D32);
         borderColor = Colors.green;
       } else if (_selectedOptionIndex == index) {
-        // Highlighting wrong selection in Red
-        cardColor = const Color(0xFFFFEBEE); 
-        textColor = AppColors.error;
+        cardColor = isDark ? const Color(0xFFB71C1C) : const Color(0xFFFFEBEE); 
+        textColor = isDark ? Colors.red[100]! : AppColors.error;
         borderColor = AppColors.error;
       }
     }
@@ -260,7 +279,11 @@ class _QuizScreenState extends State<QuizScreen> {
             borderRadius: BorderRadius.circular(18),
             border: Border.all(color: borderColor, width: 2),
             boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03), 
+                blurRadius: 10, 
+                offset: const Offset(0, 4)
+              )
             ],
           ),
           child: Text(
