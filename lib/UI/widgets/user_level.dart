@@ -17,7 +17,6 @@ class UserLevel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Initialize Theme
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     double progress = currentExp / totalExpNeeded;
@@ -25,7 +24,6 @@ class UserLevel extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        // 2. Surface color adapts to theme
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
@@ -35,7 +33,6 @@ class UserLevel extends StatelessWidget {
             offset: const Offset(0, 4),
           )
         ],
-        // 3. Subtle border for dark mode to define the card edge
         border: isDark 
             ? Border.all(color: theme.colorScheme.onSurface.withOpacity(0.05)) 
             : null,
@@ -51,7 +48,6 @@ class UserLevel extends StatelessWidget {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
-                  // 4. Color follows primary (Navy vs Cyan)
                   color: theme.colorScheme.primary,
                 ),
               ),
@@ -72,13 +68,11 @@ class UserLevel extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          // Thinner XP Bar
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 5,
-              // 5. Background adapts to surface variant or scaffold bg
               backgroundColor: isDark 
                   ? theme.colorScheme.onSurface.withOpacity(0.1) 
                   : AppColors.scaffoldBg,

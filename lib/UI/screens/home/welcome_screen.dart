@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutterapp/core/constants/app_colors.dart'; // Import your colors
+import 'package:flutterapp/core/constants/app_colors.dart'; 
 import 'package:flutterapp/UI/screens/home/home_screen.dart';
 
 class Welcomescreen extends StatelessWidget {
@@ -51,7 +51,6 @@ class Welcomescreen extends StatelessWidget {
                 
                 const SizedBox(height: 10),
                 
-                // Tagline
                 const Text(
                   "Level Up Your Learning\nThrough Play",
                   textAlign: TextAlign.center,
@@ -64,8 +63,6 @@ class Welcomescreen extends StatelessWidget {
                 ),
                 
                 const Spacer(flex: 5),
-                
-                // Get Started Button
                 GestureDetector(
                   onTap: () {
                     Navigator.push(

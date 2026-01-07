@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutterapp/core/constants/app_colors.dart'; 
 
 class AppTheme {
-  // --- 1. THEME LOGIC ---
   static const String _key = "user_theme_mode";
   static final ValueNotifier<ThemeMode> themeMode = ValueNotifier(ThemeMode.system);
 
@@ -21,10 +20,6 @@ class AppTheme {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_key, mode.name);
   }
-
-  // --- 2. THEME DATA (Using your Constants) ---
-  
-  // Light Mode: Using your Navy and ScaffoldBg
   static ThemeData get light {
     return ThemeData(
       useMaterial3: true,
@@ -32,16 +27,14 @@ class AppTheme {
       colorScheme: ColorScheme.fromSeed(
         seedColor: Colors.cyan,
         brightness: Brightness.light,
-        primary: AppColors.primaryNavy,    // Your 0xFF1A237E
-        secondary: Colors.cyan,           // Your Cyan accent
-        surface: Colors.white,            // For your cards
-        onSurface: AppColors.primaryNavy, // Text on cards
+        primary: AppColors.primaryNavy,    
+        secondary: Colors.cyan,         
+        surface: Colors.white,           
+        onSurface: AppColors.primaryNavy, 
       ),
-      scaffoldBackgroundColor: AppColors.scaffoldBg, // Your 0xFFF8FAFC
+      scaffoldBackgroundColor: AppColors.scaffoldBg, 
     );
   }
-
-  // Dark Mode: Using Navy as background and Cyan as Primary
   static ThemeData get dark {
     return ThemeData(
       useMaterial3: true,
@@ -49,9 +42,8 @@ class AppTheme {
       colorScheme: ColorScheme.fromSeed(
         seedColor: Colors.cyan,
         brightness: Brightness.dark,
-        primary: Colors.cyanAccent,        // Cyan pops in dark
+        primary: Colors.cyanAccent,      
         secondary: Colors.cyan,
-        // Using a darker version of your Navy for the background
         surface: const Color(0xFF1E293B),  
       ),
       scaffoldBackgroundColor: const Color(0xFF0F172A), 

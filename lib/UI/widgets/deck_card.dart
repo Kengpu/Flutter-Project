@@ -17,7 +17,6 @@ class DeckCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Initialize Theme Engine
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     bool hasImage = deck.coverImage != null && deck.coverImage!.isNotEmpty;
@@ -28,7 +27,6 @@ class DeckCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
-          // 2. Dynamic Gradient: Shifts from Navy/Light-Blue to Slate/Cyan
           gradient: !hasImage
               ? LinearGradient(
                   colors: isDark 
@@ -48,12 +46,10 @@ class DeckCard extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            // --- Background Image Overlay ---
             if (hasImage)
               Positioned.fill(
                 child: ColorFiltered(
                   colorFilter: ColorFilter.mode(
-                    // 3. Image Contrast: Darker in dark mode to make white text pop
                     Colors.black.withOpacity(isDark ? 0.55 : 0.35), 
                     BlendMode.darken,
                   ),
@@ -63,15 +59,11 @@ class DeckCard extends StatelessWidget {
                   ),
                 ),
               ),
-
-            // Tag
             Positioned(
               top: 12,
               left: 12,
               child: _buildStatusTag(context, deck.deckStatus),
             ),
-
-            // --- Text Content ---
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -82,7 +74,7 @@ class DeckCard extends StatelessWidget {
                   Text(
                     deck.title,
                     style: const TextStyle(
-                      color: Colors.white, // Locked to white for readability on image/gradient
+                      color: Colors.white, 
                       fontWeight: FontWeight.bold,
                       fontSize: 17,
                       letterSpacing: -0.2,
@@ -104,14 +96,13 @@ class DeckCard extends StatelessWidget {
                 ],
               ),
             ),
-
-            // --- Menu Button ---
             Positioned(
               top: 4,
               right: 4,
               child: PopupMenuButton<String>(
                 icon: Icon(
                   Icons.more_vert_rounded, 
+                  // ignore: deprecated_member_use
                   color: Colors.white.withOpacity(0.9), // White works best on card backgrounds
                 ),
                 color: theme.colorScheme.surface, 
@@ -165,7 +156,7 @@ class DeckCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.9), // Slight transparency for glass effect
+        color: color.withOpacity(0.9), 
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(

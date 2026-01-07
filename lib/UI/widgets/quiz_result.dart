@@ -19,13 +19,12 @@ class QuizResultWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Theme Initialization
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    int percentage = totalQuestions > 0 ? ((score / totalQuestions) * 100).toInt() : 0;
-    
-    // Performance logic
+    int percentage = totalQuestions > 0
+        ? ((score / totalQuestions) * 100).toInt()
+        : 0;
     String rank;
     IconData icon;
     Color accentColor;
@@ -41,49 +40,47 @@ class QuizResultWidget extends StatelessWidget {
     } else {
       rank = "Keep Practicing!";
       icon = Icons.menu_book_rounded;
-      // 2. Dynamic branding color
-      accentColor = theme.colorScheme.primary; 
+      accentColor = theme.colorScheme.primary;
     }
 
     return Scaffold(
-      backgroundColor: Colors.black.withOpacity(isDark ? 0.8 : 0.6), 
+      // ignore: deprecated_member_use
+      backgroundColor: Colors.black.withOpacity(isDark ? 0.8 : 0.6),
       body: Center(
         child: Container(
           width: MediaQuery.of(context).size.width * 0.88,
-          height: MediaQuery.of(context).size.height * 0.82, 
+          height: MediaQuery.of(context).size.height * 0.82,
           padding: const EdgeInsets.all(25),
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(isDark ? 0.5 : 0.3), 
-                blurRadius: 20, 
-                spreadRadius: 2
-              )
+                // ignore: deprecated_member_use
+                color: Colors.black.withOpacity(isDark ? 0.5 : 0.3),
+                blurRadius: 20,
+                spreadRadius: 2,
+              ),
             ],
           ),
           child: Column(
-            mainAxisSize: MainAxisSize.min, 
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // --- ICON & RANK ---
               Icon(icon, color: accentColor, size: 70),
               const SizedBox(height: 10),
               Text(
                 rank,
                 style: TextStyle(
-                  fontSize: 26, 
-                  fontWeight: FontWeight.bold, 
-                  color: theme.colorScheme.onSurface
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
-              
+
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 15),
                 child: Divider(thickness: 1, color: theme.dividerColor),
               ),
-
-              // --- STATS ROW ---
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -91,27 +88,23 @@ class QuizResultWidget extends StatelessWidget {
                   _buildStatItem(theme, "Score", "$score / $totalQuestions"),
                 ],
               ),
-              
               const SizedBox(height: 20),
-
-              // --- SCROLLABLE REVIEW LIST ---
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "Review Answers", 
+                  "Review Answers",
                   style: TextStyle(
-                    fontWeight: FontWeight.bold, 
-                    color: theme.colorScheme.onSurface.withOpacity(0.6), 
-                    fontSize: 13
-                  )
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurface.withOpacity(0.6),
+                    fontSize: 13,
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
-              
+
               Flexible(
                 child: Container(
                   decoration: BoxDecoration(
-                    // 3. Review container background
                     color: theme.colorScheme.onSurface.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(15),
                   ),
@@ -123,8 +116,10 @@ class QuizResultWidget extends StatelessWidget {
                       final card = quizCards[index];
                       final userAnswerIdx = userAnswers[index];
                       final options = card['shuffledOptions'];
-                      final String userText = userAnswerIdx != null ? options[userAnswerIdx] : "No Answer";
-                      
+                      final String userText = userAnswerIdx != null
+                          ? options[userAnswerIdx]
+                          : "No Answer";
+
                       return _buildCompactReviewRow(
                         theme,
                         card['frontText'],
@@ -137,8 +132,6 @@ class QuizResultWidget extends StatelessWidget {
               ),
 
               const SizedBox(height: 25),
-
-              // --- BUTTONS ---
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -147,12 +140,18 @@ class QuizResultWidget extends StatelessWidget {
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: theme.colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                    elevation: 0, // Material 3 uses 0 elevation for flat look
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    elevation: 0,
                   ),
                   child: const Text(
                     "PLAY AGAIN",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.1,
+                    ),
                   ),
                 ),
               ),
@@ -162,8 +161,8 @@ class QuizResultWidget extends StatelessWidget {
                 child: Text(
                   "Exit to Menu",
                   style: TextStyle(
-                    color: theme.colorScheme.onSurface.withOpacity(0.5), 
-                    fontWeight: FontWeight.w600
+                    color: theme.colorScheme.onSurface.withOpacity(0.5),
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -177,64 +176,74 @@ class QuizResultWidget extends StatelessWidget {
   Widget _buildStatItem(ThemeData theme, String label, String value) {
     return Column(
       children: [
-        Text(label, 
-          style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 12)
-        ),
-        Text(value, 
+        Text(
+          label,
           style: TextStyle(
-            fontSize: 20, 
-            fontWeight: FontWeight.bold, 
-            color: theme.colorScheme.primary
-          )
+            color: theme.colorScheme.onSurface.withOpacity(0.5),
+            fontSize: 12,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: theme.colorScheme.primary,
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildCompactReviewRow(ThemeData theme, String question, String correct, String user) {
+  Widget _buildCompactReviewRow(
+    ThemeData theme,
+    String question,
+    String correct,
+    String user,
+  ) {
     bool isCorrect = correct == user;
     final isDark = theme.brightness == Brightness.dark;
-
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        // 4. Item background: Surface in light, Primary tint in dark
-        color: isDark ? theme.colorScheme.primary.withOpacity(0.1) : theme.colorScheme.surface,
+        color: isDark
+            ? theme.colorScheme.primary.withOpacity(0.1)
+            : theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: theme.colorScheme.onSurface.withOpacity(0.05)
+          color: theme.colorScheme.onSurface.withOpacity(0.05),
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            question, 
+            question,
             style: TextStyle(
-              fontSize: 13, 
-              fontWeight: FontWeight.w600, 
-              color: theme.colorScheme.onSurface
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface,
             ),
-            maxLines: 1, 
-            overflow: TextOverflow.ellipsis
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 4),
           Row(
             children: [
               Icon(
-                isCorrect ? Icons.check_circle : Icons.cancel, 
-                color: isCorrect ? Colors.green : AppColors.error, 
-                size: 14
+                isCorrect ? Icons.check_circle : Icons.cancel,
+                color: isCorrect ? Colors.green : AppColors.error,
+                size: 14,
               ),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   isCorrect ? "Correct!" : "Right: $correct",
                   style: TextStyle(
-                    fontSize: 12, 
+                    fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: isCorrect ? Colors.green[700] : AppColors.error
+                    color: isCorrect ? Colors.green[700] : AppColors.error,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

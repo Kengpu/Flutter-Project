@@ -47,7 +47,6 @@ class CardEditorItem extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header: Card Number and Delete Icon
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -74,8 +73,6 @@ class CardEditorItem extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 15),
-
-          // Term, Definition and Image Picker
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -96,8 +93,6 @@ class CardEditorItem extends StatelessWidget {
               ),
             ],
           ),
-
-          // --- MULTIPLE CHOICE SECTION ---
           if (card.distractors != null && card.distractors!.isNotEmpty) ...[
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 15),
@@ -128,8 +123,6 @@ class CardEditorItem extends StatelessWidget {
               );
             }).toList(),
           ],
-
-          // Add Multiple Choice Button
           const SizedBox(height: 10),
           TextButton.icon(
             onPressed: onAddMultipleChoice,

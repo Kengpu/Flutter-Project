@@ -8,8 +8,6 @@ class MainBottomNav extends StatelessWidget {
   const MainBottomNav({
     super.key,
     required this.currentIndex, required Null Function(dynamic index) onTabSelected, 
-    // Removed the unused onTabSelected parameter to keep it clean, 
-    // as navigation is handled inside onPressed here.
   });
 
   @override
@@ -18,7 +16,6 @@ class MainBottomNav extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return BottomAppBar(
-      // 1. Dynamic Background: White in Light Mode, Dark Surface in Dark Mode
       color: theme.colorScheme.surface,
       elevation: 10,
       shape: const CircularNotchedRectangle(),
@@ -28,13 +25,12 @@ class MainBottomNav extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            // --- HOME BUTTON ---
             IconButton(
               icon: Icon(
                 Icons.home_filled,
-                // 2. Active color: Navy in Light Mode, Cyan in Dark Mode
                 color: currentIndex == 0 
                     ? theme.colorScheme.primary 
+                    // ignore: deprecated_member_use
                     : theme.colorScheme.onSurface.withOpacity(0.4),
               ),
               onPressed: () {
@@ -48,15 +44,14 @@ class MainBottomNav extends StatelessWidget {
               },
             ),
 
-            const SizedBox(width: 40), // Space for FloatingActionButton
+            const SizedBox(width: 40), 
 
-            // --- SETTINGS BUTTON ---
             IconButton(
               icon: Icon(
                 Icons.settings,
-                // 2. Active color logic repeated
                 color: currentIndex == 1 
                     ? theme.colorScheme.primary 
+                    // ignore: deprecated_member_use
                     : theme.colorScheme.onSurface.withOpacity(0.4),
               ),
               onPressed: () {

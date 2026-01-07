@@ -76,7 +76,6 @@ class _FlashcardScreenState extends State<FlashcardScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Access current theme data
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 

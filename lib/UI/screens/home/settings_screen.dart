@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutterapp/UI/screens/home/home_screen.dart';
 import 'package:flutterapp/UI/widgets/main_bottom_nav.dart';
-import 'package:flutterapp/core/theme/app_theme.dart'; // Import your merged theme
+import 'package:flutterapp/core/theme/app_theme.dart'; 
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -103,7 +103,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
       decoration: BoxDecoration(
-        // Card color (Surface) automatically switches from White to Dark Gray
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(15),
         boxShadow: [

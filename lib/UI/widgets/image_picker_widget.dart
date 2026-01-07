@@ -34,7 +34,6 @@ class ImagePickerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Initialize Theme
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -44,13 +43,13 @@ class ImagePickerWidget extends StatelessWidget {
         width: size,
         height: size,
         decoration: BoxDecoration(
-          // 2. Dynamic Background: Light Navy for light theme, Surface color for dark
           color: isDark 
               ? theme.colorScheme.surfaceVariant.withOpacity(0.5) 
+              // ignore: deprecated_member_use
               : AppColors.primaryNavy.withOpacity(0.05),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            // 3. Dynamic Border: Use primary color (Navy/Cyan) at low opacity
+            // ignore: deprecated_member_use
             color: theme.colorScheme.primary.withOpacity(0.2),
             width: 1.5,
           ),
@@ -65,7 +64,6 @@ class ImagePickerWidget extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.add_photo_alternate_outlined,
-                    // 4. Icon color follows Primary (Navy or Cyan)
                     color: theme.colorScheme.primary,
                     size: 28,
                   ),

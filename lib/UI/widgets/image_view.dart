@@ -21,33 +21,26 @@ class ImageView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-
-    // 1. Unified Placeholder Builder
     Widget buildPlaceholder({IconData icon = Icons.image_outlined}) {
       return Container(
         width: width,
         height: height,
         decoration: BoxDecoration(
-          // Uses surface variant to distinguish from main background
           color: theme.colorScheme.surfaceVariant.withOpacity(isDark ? 0.3 : 0.5),
         ),
         child: Center(
           child: Icon(
             icon,
-            // Adapts color to Primary (Navy/Cyan) or Muted OnSurface
+            // ignore: deprecated_member_use
             color: theme.colorScheme.onSurface.withOpacity(0.3),
             size: width != null ? width! * 0.4 : 24,
           ),
         ),
       );
     }
-
-    // 2. Null/Empty Check
     if (imageSource == null || imageSource!.isEmpty) {
       return buildPlaceholder();
     }
-
-    // 3. Base64 Check
     if (!imageSource!.startsWith('http')) {
       try {
         return Image.memory(
@@ -64,13 +57,11 @@ class ImageView extends StatelessWidget {
       }
     }
 
-    // 4. Network Image
     return Image.network(
       imageSource!,
       width: width,
       height: height,
       fit: fit,
-      // Loading builder adds a nice themed shimmer-like effect
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
         return buildPlaceholder(icon: Icons.downloading_rounded);

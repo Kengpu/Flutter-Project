@@ -15,11 +15,8 @@ class ResultWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Initialize Theme
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-
-    // Performance logic
     String rank;
     IconData icon;
     Color accentColor;
@@ -35,23 +32,22 @@ class ResultWidget extends StatelessWidget {
     } else {
       rank = "Session Finished";
       icon = Icons.timer_outlined;
-      // 2. Dynamic accent: Cyan in Dark, Navy in Light
       accentColor = theme.colorScheme.primary; 
     }
 
     return Scaffold(
-      // 3. Dynamic overlay: Darker in Light Mode, deeper black in Dark Mode
+      // ignore: deprecated_member_use
       backgroundColor: Colors.black.withOpacity(isDark ? 0.8 : 0.6), 
       body: Center(
         child: Container(
           width: MediaQuery.of(context).size.width * 0.85,
           padding: const EdgeInsets.all(30),
           decoration: BoxDecoration(
-            // 4. Surface color adapts to theme
             color: theme.colorScheme.surface, 
             borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
+                // ignore: deprecated_member_use
                 color: Colors.black.withOpacity(isDark ? 0.5 : 0.3),
                 blurRadius: 30,
                 offset: const Offset(0, 10),
@@ -61,10 +57,10 @@ class ResultWidget extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // --- ICON & RANK ---
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
+                  // ignore: deprecated_member_use
                   color: accentColor.withOpacity(0.15),
                   shape: BoxShape.circle,
                 ),
@@ -85,6 +81,7 @@ class ResultWidget extends StatelessWidget {
               Text(
                 "Performance Summary",
                 style: TextStyle(
+                  // ignore: deprecated_member_use
                   color: theme.colorScheme.onSurface.withOpacity(0.6), 
                   fontSize: 14,
                 ),
@@ -94,15 +91,11 @@ class ResultWidget extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 25),
                 child: Divider(height: 1, color: theme.dividerColor),
               ),
-
-              // --- STATS AREA ---
               _buildStatRow(theme, "Time Taken", time, Icons.access_time_rounded),
               const SizedBox(height: 15),
               _buildStatRow(theme, "Points Earned", "+$score", Icons.emoji_events_outlined),
 
               const SizedBox(height: 35),
-
-              // --- BUTTONS ---
               Column(
                 children: [
                   SizedBox(
@@ -151,7 +144,7 @@ class ResultWidget extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            // 6. Use background or surface variant for stat icons
+            // ignore: deprecated_member_use
             color: theme.colorScheme.primary.withOpacity(0.1),
             borderRadius: BorderRadius.circular(10),
           ),
