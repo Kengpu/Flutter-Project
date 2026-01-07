@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutterapp/core/constants/app_colors.dart';
 import 'package:flutterapp/UI/screens/home/home_screen.dart';
 import 'package:flutterapp/UI/screens/home/settings_screen.dart'; 
 

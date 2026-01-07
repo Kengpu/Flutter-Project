@@ -60,6 +60,11 @@ class CardEditorItem extends StatelessWidget {
                   letterSpacing: 1.2,
                 ),
               ),
+              const SizedBox(width: 8,),
+              if (card.distractors != null && card.distractors!.isNotEmpty)
+                  const Icon(Icons.quiz_outlined, size: 14, color: Colors.green,)
+              else 
+                  const Icon(Icons.quiz_outlined, size: 14, color: Colors.grey,),
               IconButton(
                 onPressed: onDelete,
                 icon: Icon(Icons.delete_outline, color: theme.colorScheme.error, size: 22),

@@ -300,6 +300,20 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 _modeIcon(theme, Icons.help_outline, "Quiz", () async { 
                   Navigator.pop(context); 
+                  final quizCards = deck.flashcards.where((card) =>
+                    card.distractors != null &&
+                    card.distractors!.any((d) => d.trim().isNotEmpty)
+                  ).toList();
+
+                  if (quizCards.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("This deck has no multiple-choice card. Add 'Choices' in Edit mode to play.")),
+                    );
+                    return;
+                  }
+
+                  final quizDeck = deck.copyWith(flashcards: quizCards);
+
                   final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => QuizScreen(deck: deck))); 
                   if (result == true || result is int){
                     _loadDecks();

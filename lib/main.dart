@@ -4,12 +4,11 @@ import 'package:flutterapp/core/theme/app_theme.dart'; // Import your merged fil
 import 'package:flutterapp/UI/widgets/fullscreen_wrapper.dart'; // Import wrapper
 
 void main() async {
-  // 1. Initialize Flutter binding
+  // Initialize Flutter binding
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 2. Load the saved theme (Dark or Light) from the phone's memory
+  // Load the saved theme (Dark or Light) from the phone's memory
   await AppTheme.init();
-  
   runApp(const StudyFlowApp());
 }
 
