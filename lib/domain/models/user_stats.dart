@@ -30,7 +30,7 @@ class UserStats {
 
     if (difference == 1) {
       dailyStreak++;
-    } else if (difference > 1) {
+    } else if (difference > 1 || dailyStreak == 0) {
       dailyStreak = 1;
     }
 

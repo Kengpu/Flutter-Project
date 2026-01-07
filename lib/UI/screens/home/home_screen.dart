@@ -106,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: AppColors.scaffoldBg,
       body: Column(
         children: [
-          _buildHeader(), // Now contains Title, Level, and Search
+          _buildHeader(), 
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator(color: AppColors.primaryNavy))
@@ -265,15 +265,17 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 _modeIcon(Icons.help_outline, "Quiz", () async { 
                   Navigator.pop(context); 
-                  final earnedExp = await Navigator.push(context, MaterialPageRoute(builder: (_) => QuizScreen(deck: deck))); 
-                  if (earnedExp != null && earnedExp is int){
+                  final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => QuizScreen(deck: deck))); 
+                  if (result == true || result is int){
+                  _loadDecks();
                   _loadUserStats();
                   }
                   }),
                 _modeIcon(Icons.extension_outlined, "Match", () async { 
                   Navigator.pop(context); 
                   final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => MatchingScreen(deck: deck))); 
-                  if (result != null) {
+                  if (result == true || result is int) {
+                  _loadDecks();
                   _loadUserStats();
                   }
                   }),

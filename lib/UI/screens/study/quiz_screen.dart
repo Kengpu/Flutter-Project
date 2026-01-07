@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
-import 'package:flutterapp/core/constants/app_colors.dart'; // Import your colors
+import 'package:flutterapp/core/constants/app_colors.dart'; 
 import 'package:flutterapp/UI/widgets/quiz_result.dart';
 import 'package:flutterapp/data/datascource/local_database.dart';
 import 'package:flutterapp/data/models/user_stats_model.dart';
+import 'package:flutterapp/data/repositories/deck_repository_impl.dart';
 import 'package:flutterapp/data/repositories/user_repository_impl.dart';
 import 'package:flutterapp/domain/models/deck.dart';
 import 'package:flutterapp/domain/models/flashcard.dart';
@@ -28,6 +29,15 @@ class _QuizScreenState extends State<QuizScreen> {
   bool _showFeedback = false;
 
   late List<Map<String, dynamic>> _quizData;
+
+  DeckStatus newStatus(int score, int total) {
+    double percentage = (score / total) * 100;
+
+    if (percentage <= 40) return DeckStatus.struggling;
+    if (percentage <= 70) return DeckStatus.uncertain;
+    if (percentage <= 90) return DeckStatus.confident;
+    return DeckStatus.mastered;
+  }
 
   @override
   void initState() {
@@ -93,6 +103,10 @@ class _QuizScreenState extends State<QuizScreen> {
   void _finishQuiz() async {
     int totalExpEarned = _score * 10;
     final userRepo = UserRepositoryImpl(LocalDataSource());
+    final deckRepo = DeckRepositoryImpl(LocalDataSource());
+
+    widget.deck.deckStatus = newStatus(_score, _quizData.length);
+    await deckRepo.updateDeck(widget.deck);
     UserStats? stats = await userRepo.getUserStats("current_user");
     
     stats.addEXP(totalExpEarned);
