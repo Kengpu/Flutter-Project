@@ -80,6 +80,7 @@ class _EditDeckScreenState extends State<EditDeckScreen> {
   }
 
   void _saveDeck() async {
+    if (!_isValid()) return;
     List<Flashcard> finalCards = _cardControllers
         .map(
           (c) => Flashcard(
@@ -114,6 +115,32 @@ class _EditDeckScreenState extends State<EditDeckScreen> {
       await _deckRepo.updateDeck(updatedDeck);
       if (mounted) Navigator.pop(context, true);
     }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: AppColors.error,),
+    );
+  }
+
+  bool _isValid () {
+    if (_titleController.text.trim().isEmpty) {
+      _showSnackBar("Please enter the deck title");
+      return false;
+    }
+    if (_cardControllers.isEmpty) {
+      _showSnackBar("Please add at least one card");
+      return false;
+    }
+
+    for (int i = 0; i < _cardControllers.length; i++) {
+      final c = _cardControllers[i];
+      if (c.termController.text.trim().isEmpty || c.definitionController.text.trim().isEmpty) {
+        _showSnackBar("Card ${i+1} is missing a Term or Definition.");
+        return false;
+      }
+    }
+    return true;
   }
 
   @override

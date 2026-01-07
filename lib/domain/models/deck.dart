@@ -32,6 +32,28 @@ class Deck {
     required this.flashcards
   }) : id = id ?? uuid.v4();
 
+  Deck copyWith({
+  String? id,
+  String? title,
+  String? description,
+  String? coverImage,
+  int? totalPoint,
+  int? highscore,
+  DeckStatus? deckStatus,
+  List<Flashcard>? flashcards,
+}) {
+  return Deck(
+    id: id ?? this.id,
+    title: title ?? this.title,
+    description: description ?? this.description,
+    coverImage: coverImage ?? this.coverImage,
+    totalPoint: totalPoint ?? this.totalPoint,
+    highscore: highscore ?? this.highscore,
+    deckStatus: deckStatus ?? this.deckStatus,
+    flashcards: flashcards ?? this.flashcards,
+  );
+}
+
   @override
   String toString() {
     return """"
