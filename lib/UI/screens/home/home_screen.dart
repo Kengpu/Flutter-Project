@@ -100,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: AppColors.scaffoldBg,
       body: Column(
         children: [
-          _buildHeader(), // Now contains Title, Level, and Search
+          _buildHeader(), // Updated with SafeArea
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator(color: AppColors.primaryNavy))
@@ -113,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 10),
                           const Text("My Study Decks", 
                             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                           const SizedBox(height: 15),
@@ -143,46 +143,49 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- UPDATED HEADER (TITLE + LEVEL + SEARCH) ---
+  // --- HEADER WITH SAFE AREA (FIXES TOP OVERLAP) ---
   Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(25, 5 , 25, 5),
-      decoration: const BoxDecoration(
-        color: AppColors.scaffoldBg, // Keep it seamless with background
-      ),
-      child: Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Left Side: Title and Subtitle
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Study Flow", 
-                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.primaryNavy)),
-                    Text("Ready to learn?", 
-                      style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
-                  ],
+    return SafeArea(
+      bottom: false, // Ensures content starts below the status bar/notch
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(25, 15, 25, 15),
+        decoration: const BoxDecoration(
+          color: AppColors.scaffoldBg,
+        ),
+        child: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Left Side: Title and Subtitle
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Study Flow", 
+                        style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.primaryNavy)),
+                      Text("Ready to learn?", 
+                        style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                    ],
+                  ),
                 ),
-              ),
-              
-              // Right Side: Compact Level Box
-              SizedBox(
-                width: 135, 
-                child: UserLevel(
-                  level: userLevel, 
-                  currentExp: currentExp, 
-                  totalExpNeeded: expNeeded, 
-                  streak: userStreak
+                
+                // Right Side: Compact Level Box
+                SizedBox(
+                  width: 135, 
+                  child: UserLevel(
+                    level: userLevel, 
+                    currentExp: currentExp, 
+                    totalExpNeeded: expNeeded, 
+                    streak: userStreak
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _buildSearchBox(), // Search is now inside the header area
-        ],
+              ],
+            ),
+            const SizedBox(height: 20),
+            _buildSearchBox(),
+          ],
+        ),
       ),
     );
   }
@@ -190,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildSearchBox() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 15),
-      height: 50, // Fixed height for a cleaner look
+      height: 50,
       decoration: BoxDecoration(
         color: AppColors.textPrimary,
         borderRadius: BorderRadius.circular(15),
