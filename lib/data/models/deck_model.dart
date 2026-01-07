@@ -64,13 +64,14 @@ class DeckModel {
 
   factory DeckModel.fromJson(Map<String, dynamic> json) {
     return DeckModel(
-      id: json["id"],
-      title: json["title"], 
+      id: json["id"] as String,
+      title: json["title"] as String, 
       description: json["description"] ?? "",
-      coverImage: json["coverImage"],
+      coverImage: json["coverImage"] as String?,
       totalPoint: json["totalPoint"] ?? 0, 
       highscore:json["highscore"] ?? 0, 
-      deckStatus: DeckStatus.values.byName(json["deckStatus"]),
+      deckStatus: DeckStatus.values.firstWhere((e) => e.name == json["deckStatus"],
+                          orElse: () => DeckStatus.newDeck,),
       flashcards: (json["flashcards"] as List).map((f) => FlashcardModel.fromJson(f)).toList(),
       );
   }

@@ -20,7 +20,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            automaticallyImplyLeading: false, // Removes the back button
+            automaticallyImplyLeading: false, 
             expandedHeight: 65.0,
             backgroundColor: AppColors.scaffoldBg,
             elevation: 0,

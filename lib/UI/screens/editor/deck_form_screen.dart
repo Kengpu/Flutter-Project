@@ -90,6 +90,7 @@ class _EditDeckScreenState extends State<EditDeckScreen> {
 
     if (widget.deckToEdit == null) {
       await _deckRepo.addDeck(updatedDeck);
+      Navigator.pop(context, true);
     } else {
       await _deckRepo.updateDeck(updatedDeck);
     }

@@ -10,7 +10,9 @@ import 'package:flutterapp/UI/widgets/main_bottom_nav.dart';
 import 'package:flutterapp/UI/widgets/user_level.dart';
 import 'package:flutterapp/data/datascource/local_database.dart';
 import 'package:flutterapp/data/repositories/deck_repository_impl.dart';
+import 'package:flutterapp/data/repositories/user_repository_impl.dart';
 import 'package:flutterapp/domain/models/deck.dart';
+import 'package:flutterapp/domain/models/user_stats.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,22 +23,19 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final DeckRepositoryImpl _deckRepo = DeckRepositoryImpl(LocalDataSource());
+  final UserRepositoryImpl _userRepo  = UserRepositoryImpl(LocalDataSource());
   
   List<Deck> _allDecks = [];         
   List<Deck> _filteredDecks = [];    
   bool _isLoading = true;
+  UserStats? _stats;
   final TextEditingController _searchController = TextEditingController();
-
-  // --- USER PROGRESS DATA ---
-  int userLevel = 5;
-  int currentExp = 1250;
-  int expNeeded = 2000;
-  int userStreak = 12;
 
   @override
   void initState() {
     super.initState();
     _loadDecks();
+    _loadUserStats();
   }
 
   Future<void> _loadDecks() async {
@@ -46,6 +45,13 @@ class _HomeScreenState extends State<HomeScreen> {
       _allDecks = data;
       _filteredDecks = data; 
       _isLoading = false;
+    });
+  }
+
+  Future<void> _loadUserStats() async {
+    final UserStats stats = await _userRepo.getUserStats("current_user");
+    setState(() {
+      _stats = stats;
     });
   }
 
@@ -100,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: AppColors.scaffoldBg,
       body: Column(
         children: [
-          _buildHeader(), // Updated with SafeArea
+          _buildHeader(), 
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator(color: AppColors.primaryNavy))
@@ -145,47 +151,44 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // --- HEADER WITH SAFE AREA (FIXES TOP OVERLAP) ---
   Widget _buildHeader() {
-    return SafeArea(
-      bottom: false, // Ensures content starts below the status bar/notch
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(25, 15, 25, 15),
-        decoration: const BoxDecoration(
-          color: AppColors.scaffoldBg,
-        ),
-        child: Column(
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Left Side: Title and Subtitle
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Study Flow", 
-                        style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.primaryNavy)),
-                      Text("Ready to learn?", 
-                        style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
-                    ],
-                  ),
+    return Container(
+      padding: const EdgeInsets.fromLTRB(25, 5 , 25, 5),
+      decoration: const BoxDecoration(
+        color: AppColors.scaffoldBg, // Keep it seamless with background
+      ),
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Left Side: Title and Subtitle
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Study Flow", 
+                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.primaryNavy)),
+                    Text("Ready to learn?", 
+                      style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                  ],
                 ),
-                
-                // Right Side: Compact Level Box
-                SizedBox(
-                  width: 135, 
-                  child: UserLevel(
-                    level: userLevel, 
-                    currentExp: currentExp, 
-                    totalExpNeeded: expNeeded, 
-                    streak: userStreak
-                  ),
+              ),
+              
+              // Right Side: Compact Level Box
+              SizedBox(
+                width: 135, 
+                child: UserLevel(
+                  level: _stats?.level ?? 1, 
+                  currentExp: _stats?.totalEXP ?? 0, 
+                  totalExpNeeded: _stats?.nextLevel?? 1000, 
+                  streak: _stats?.dailyStreak ?? 0
                 ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            _buildSearchBox(),
-          ],
-        ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          _buildSearchBox(), // Search is now inside the header area
+        ],
       ),
     );
   }
@@ -260,8 +263,22 @@ class _HomeScreenState extends State<HomeScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _modeIcon(Icons.help_outline, "Quiz", () { Navigator.pop(context); Navigator.push(context, MaterialPageRoute(builder: (_) => QuizScreen(deck: deck))); }),
-                _modeIcon(Icons.extension_outlined, "Match", () { Navigator.pop(context); Navigator.push(context, MaterialPageRoute(builder: (_) => MatchingScreen(deck: deck))); }),
+                _modeIcon(Icons.help_outline, "Quiz", () async { 
+                  Navigator.pop(context); 
+                  final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => QuizScreen(deck: deck))); 
+                  if (result == true || result is int){
+                  _loadDecks();
+                  _loadUserStats();
+                  }
+                  }),
+                _modeIcon(Icons.extension_outlined, "Match", () async { 
+                  Navigator.pop(context); 
+                  final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => MatchingScreen(deck: deck))); 
+                  if (result == true || result is int) {
+                  _loadDecks();
+                  _loadUserStats();
+                  }
+                  }),
                 _modeIcon(Icons.style_outlined, "Study", () { Navigator.pop(context); Navigator.push(context, MaterialPageRoute(builder: (_) => FlashcardScreen(deck: deck))); }),
               ],
             ),

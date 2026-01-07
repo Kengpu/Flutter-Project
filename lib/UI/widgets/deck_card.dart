@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutterapp/core/constants/app_colors.dart'; // Import your colors
+import 'package:flutterapp/core/constants/app_colors.dart'; 
 import 'package:flutterapp/domain/models/deck.dart';
 
 class DeckCard extends StatelessWidget {
@@ -42,6 +42,7 @@ class DeckCard extends StatelessWidget {
         ),
         child: Stack(
           children: [
+
             // --- Background Image Overlay ---
             if (hasImage)
               Positioned.fill(
@@ -57,6 +58,12 @@ class DeckCard extends StatelessWidget {
                 ),
               ),
 
+            // Tag
+            Positioned(
+              top: 12,
+              left: 12,
+              child: _buildStatusTag(deck.deckStatus),
+            ),
             // --- Text Content ---
             Padding(
               padding: const EdgeInsets.all(16),
@@ -74,7 +81,7 @@ class DeckCard extends StatelessWidget {
                   Text(
                     deck.title,
                     style: const TextStyle(
-                      color: AppColors.textPrimary, // White
+                      color: AppColors.textPrimary, 
                       fontWeight: FontWeight.bold,
                       fontSize: 17,
                       shadows: [Shadow(color: Colors.black45, blurRadius: 8)],
@@ -128,6 +135,47 @@ class DeckCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildStatusTag(DeckStatus status) {
+    if(status == DeckStatus.newDeck) return const SizedBox.shrink();
+    Color color;
+    String text;
+
+    switch (status) {
+      case DeckStatus.struggling:
+        color = Colors.red;
+        text = "Struggling";
+        break;
+      case DeckStatus.uncertain:
+        color = Colors.orange;
+        text = "Uncertain";
+        break;
+      case DeckStatus.confident: 
+        color = Colors.blue;
+        text = "Confident";
+        break;
+      case DeckStatus.mastered: 
+        color = Colors.green;
+        text = "Mastered";
+        break;
+      case DeckStatus.newDeck: 
+        color = Colors.grey;
+        text = "New";
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color, width: 1.5),
+      ),
+      child: Text(
+        text.toUpperCase(),
+        style: TextStyle(color: AppColors.textPrimary, fontSize: 9, fontWeight: FontWeight.bold),
       ),
     );
   }
