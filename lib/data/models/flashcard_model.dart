@@ -4,6 +4,7 @@ class FlashcardModel {
   final String id;
   final String frontText;
   final String backText;
+  final String? image;
   final CardStatus status;
   final List<String>? distractors;
 
@@ -11,6 +12,7 @@ class FlashcardModel {
     required this.id,
     required this.frontText,
     required this.backText,
+    this.image,
     required this.status,
     this.distractors,
   });
@@ -20,6 +22,7 @@ class FlashcardModel {
       id: flashcard.id,
       frontText: flashcard.frontText,
       backText: flashcard.backText,
+      image: flashcard.image,
       status: flashcard.status,
       distractors: flashcard.distractors
     );
@@ -30,6 +33,7 @@ class FlashcardModel {
       id: id,
       frontText: frontText,
       backText: backText,
+      image: image,
       status: status,
       distractors: distractors,
     );
@@ -39,6 +43,7 @@ class FlashcardModel {
     "id": id,
     "frontText": frontText,
     "backText": backText,
+    "image": image,
     "status": status.name,
     "distractors": distractors,
   };
@@ -48,6 +53,7 @@ class FlashcardModel {
       id: json["id"] as String,
       frontText: json["frontText"] as String, 
       backText: json["backText"] as String, 
+      image: json["image"] as String,
       status: CardStatus.values.firstWhere((e) => e.name == json["status"]), 
       distractors: json["distractors"] != null ? List<String>.from(json["distractors"]) : null,
       );

@@ -10,7 +10,9 @@ import 'package:flutterapp/UI/widgets/main_bottom_nav.dart';
 import 'package:flutterapp/UI/widgets/user_level.dart';
 import 'package:flutterapp/data/datascource/local_database.dart';
 import 'package:flutterapp/data/repositories/deck_repository_impl.dart';
+import 'package:flutterapp/data/repositories/user_repository_impl.dart';
 import 'package:flutterapp/domain/models/deck.dart';
+import 'package:flutterapp/domain/models/user_stats.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,22 +23,19 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final DeckRepositoryImpl _deckRepo = DeckRepositoryImpl(LocalDataSource());
+  final UserRepositoryImpl _userRepo  = UserRepositoryImpl(LocalDataSource());
   
   List<Deck> _allDecks = [];         
   List<Deck> _filteredDecks = [];    
   bool _isLoading = true;
+  UserStats? _stats;
   final TextEditingController _searchController = TextEditingController();
-
-  // --- USER PROGRESS DATA ---
-  int userLevel = 5;
-  int currentExp = 1250;
-  int expNeeded = 2000;
-  int userStreak = 12;
 
   @override
   void initState() {
     super.initState();
     _loadDecks();
+    _loadUserStats();
   }
 
   Future<void> _loadDecks() async {
@@ -46,6 +45,13 @@ class _HomeScreenState extends State<HomeScreen> {
       _allDecks = data;
       _filteredDecks = data; 
       _isLoading = false;
+    });
+  }
+
+  Future<void> _loadUserStats() async {
+    final UserStats stats = await _userRepo.getUserStats("current_user");
+    setState(() {
+      _stats = stats;
     });
   }
 
@@ -172,10 +178,10 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(
                 width: 135, 
                 child: UserLevel(
-                  level: userLevel, 
-                  currentExp: currentExp, 
-                  totalExpNeeded: expNeeded, 
-                  streak: userStreak
+                  level: _stats?.level ?? 1, 
+                  currentExp: _stats?.totalEXP ?? 0, 
+                  totalExpNeeded: _stats?.nextLevel?? 1000, 
+                  streak: _stats?.dailyStreak ?? 0
                 ),
               ),
             ],
@@ -257,8 +263,16 @@ class _HomeScreenState extends State<HomeScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _modeIcon(Icons.help_outline, "Quiz", () { Navigator.pop(context); Navigator.push(context, MaterialPageRoute(builder: (_) => QuizScreen(deck: deck))); }),
-                _modeIcon(Icons.extension_outlined, "Match", () { Navigator.pop(context); Navigator.push(context, MaterialPageRoute(builder: (_) => MatchingScreen(deck: deck))); }),
+                _modeIcon(Icons.help_outline, "Quiz", () async { 
+                  Navigator.pop(context); 
+                  await Navigator.push(context, MaterialPageRoute(builder: (_) => QuizScreen(deck: deck))); 
+                  _loadUserStats();
+                  }),
+                _modeIcon(Icons.extension_outlined, "Match", () async { 
+                  Navigator.pop(context); 
+                  await Navigator.push(context, MaterialPageRoute(builder: (_) => MatchingScreen(deck: deck))); 
+                  _loadUserStats();
+                  }),
                 _modeIcon(Icons.style_outlined, "Study", () { Navigator.pop(context); Navigator.push(context, MaterialPageRoute(builder: (_) => FlashcardScreen(deck: deck))); }),
               ],
             ),
