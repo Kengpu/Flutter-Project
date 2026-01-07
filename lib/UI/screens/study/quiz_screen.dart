@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutterapp/core/constants/app_colors.dart'; // Import your colors
 import 'package:flutterapp/UI/widgets/quiz_result.dart';
+import 'package:flutterapp/data/datascource/local_database.dart';
+import 'package:flutterapp/data/models/user_stats_model.dart';
+import 'package:flutterapp/data/repositories/user_repository_impl.dart';
 import 'package:flutterapp/domain/models/deck.dart';
 import 'package:flutterapp/domain/models/flashcard.dart';
 import 'dart:math';
+
+import 'package:flutterapp/domain/models/user_stats.dart';
 
 class QuizScreen extends StatefulWidget {
   final Deck deck;
@@ -70,7 +75,7 @@ class _QuizScreenState extends State<QuizScreen> {
         _selectedOptionIndex = null;
       });
     } else {
-      setState(() => _gameFinished = true);
+      _finishQuiz();
     }
   }
 
@@ -82,6 +87,20 @@ class _QuizScreenState extends State<QuizScreen> {
       _showFeedback = false;
       _selectedOptionIndex = null;
       _generateQuizData();
+    });
+  }
+
+  void _finishQuiz() async {
+    int totalExpEarned = _score * 10;
+    final userRepo = UserRepositoryImpl(LocalDataSource());
+    UserStats? stats = await userRepo.getUserStats("current_user");
+    
+    stats.addEXP(totalExpEarned);
+    stats.updateStreak();
+    await userRepo.updateUserStats(stats);
+  
+    setState(() {
+      _gameFinished = true;
     });
   }
 

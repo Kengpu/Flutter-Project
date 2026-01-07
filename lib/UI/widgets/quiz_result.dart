@@ -144,7 +144,7 @@ class QuizResultWidget extends StatelessWidget {
               ),
               const SizedBox(height: 5),
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pop(context, score),
                 child: const Text(
                   "Exit to Menu",
                   style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w600),

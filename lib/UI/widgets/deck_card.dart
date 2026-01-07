@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutterapp/core/constants/app_colors.dart'; // Import your colors
+import 'package:flutterapp/core/constants/app_colors.dart'; 
 import 'package:flutterapp/domain/models/deck.dart';
 
 class DeckCard extends StatelessWidget {

@@ -13,6 +13,7 @@ class LocalDataSource {
     final String encodedData = jsonEncode(
       decks.map((deck) => deck.toJson()).toList(),
     );
+    print("Saving Data: $encodedData");
     await prefs.setString(_decksKey, encodedData);
   }
 

@@ -265,13 +265,17 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 _modeIcon(Icons.help_outline, "Quiz", () async { 
                   Navigator.pop(context); 
-                  await Navigator.push(context, MaterialPageRoute(builder: (_) => QuizScreen(deck: deck))); 
+                  final earnedExp = await Navigator.push(context, MaterialPageRoute(builder: (_) => QuizScreen(deck: deck))); 
+                  if (earnedExp != null && earnedExp is int){
                   _loadUserStats();
+                  }
                   }),
                 _modeIcon(Icons.extension_outlined, "Match", () async { 
                   Navigator.pop(context); 
-                  await Navigator.push(context, MaterialPageRoute(builder: (_) => MatchingScreen(deck: deck))); 
+                  final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => MatchingScreen(deck: deck))); 
+                  if (result != null) {
                   _loadUserStats();
+                  }
                   }),
                 _modeIcon(Icons.style_outlined, "Study", () { Navigator.pop(context); Navigator.push(context, MaterialPageRoute(builder: (_) => FlashcardScreen(deck: deck))); }),
               ],

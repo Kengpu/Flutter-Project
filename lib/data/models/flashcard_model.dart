@@ -53,8 +53,10 @@ class FlashcardModel {
       id: json["id"] as String,
       frontText: json["frontText"] as String, 
       backText: json["backText"] as String, 
-      image: json["image"] as String,
-      status: CardStatus.values.firstWhere((e) => e.name == json["status"]), 
+      image: json["image"] as String?,
+      status: CardStatus.values.firstWhere(
+                  (e) => e.name == json["status"],
+                  orElse: () => CardStatus.isNew,), 
       distractors: json["distractors"] != null ? List<String>.from(json["distractors"]) : null,
       );
   }

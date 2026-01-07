@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math';
 import 'package:flutterapp/core/constants/app_colors.dart'; // Import your colors
+import 'package:flutterapp/data/datascource/local_database.dart';
+import 'package:flutterapp/data/repositories/user_repository_impl.dart';
 import 'package:flutterapp/domain/models/deck.dart';
 import 'package:flutterapp/domain/models/flashcard.dart';
 import 'package:flutterapp/UI/widgets/matching_result.dart';
@@ -68,16 +70,32 @@ class _MatchingGameScreenState extends State<MatchingScreen> {
     );
   }
 
-  void _onWin() {
+  void _onWin() async {
     _timer?.cancel();
+
+    int pairsCount = widget.deck.flashcards.length;
+    int basePoints = pairsCount * 7;
+    int targetTimeSeconds = pairsCount * 60;
+    int halfTime = targetTimeSeconds ~/2;
+
+    double multiplier = 1.0;
     
-    if (_secondsElapsed < 30) {
-      pointsEarned = 100;
-    } else if (_secondsElapsed < 60) {
-      pointsEarned = 75;
+    if (_secondsElapsed < halfTime) {
+      multiplier = 2.0;
+    } else if (_secondsElapsed < targetTimeSeconds) {
+      double progress = (_secondsElapsed - halfTime) / (targetTimeSeconds - halfTime);
+      multiplier = 2.0 - progress;
     } else {
-      pointsEarned = 50;
+      multiplier = 1.0;
     }
+
+    pointsEarned = (basePoints * multiplier).toInt();
+
+    final userRepository = UserRepositoryImpl(LocalDataSource());
+    final stats = await userRepository.getUserStats("current_user");
+    stats.addEXP(pointsEarned);
+    stats.updateStreak();
+    await userRepository.updateUserStats(stats);
 
     setState(() => gameFinished = true);
   }
